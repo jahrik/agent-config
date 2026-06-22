@@ -31,32 +31,9 @@ conventions, and context.
 
 ## Tooling & Environment
 
-### Ansible / Molecule
-
-- Use `mtest` wrapper (`~/.local/bin/mtest`) for molecule commands.
-- Required environment:
-  ```bash
-  DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
-  PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH"
-  ```
-- Venv: `/home/deck/.venv/ansible` (ansible-core 2.16)
-- Docker shim: `~/.local/bin/docker` → `podman`
-
-### Docker Swarm (dswarm)
-
-- Use `dswarm` wrapper (`~/.local/bin/dswarm`)
-- Always deploy with `--resolve-image never`
-- Build/test images as `local/<name>:test`
-- Check/load `br_netfilter` if ingress ports don't respond:
-  ```bash
-  sudo modprobe br_netfilter
-  ```
-
-### Package Management
-
-- Primary: `yay` (AUR helper) on Arch
-- Python: Use `uv` for dependency and virtualenv management (`uv run`, `uv sync`); local venvs at `.venv/` in each project
-- Node: `npm` global installs via `~/.local/`
+- **Python:** `uv` for dependencies and virtualenvs (`uv run`, `uv sync`); per-project `.venv/`.
+- **Packages:** `yay` (AUR helper) on Arch; Node via `npm` global installs under `~/.local/`.
+- **Ansible/Molecule, Docker Swarm (dswarm), Podman, the local test harness, and all SteamOS specifics:** see the `steamdeck` skill.
 
 ---
 
