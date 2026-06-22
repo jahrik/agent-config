@@ -1,9 +1,9 @@
 ---
-name: homelab-skill
-description: Homelab infrastructure context — SteamOS/Arch workstation, Podman, Swarm, Ansible pipelines
+name: steamdeck-skill
+description: Steam Deck workstation context — SteamOS/Arch, Podman, dind Swarm, Ansible pipelines
 ---
 
-# Homelab Skill
+# Steam Deck Skill
 
 ## Environment Overview
 
@@ -15,12 +15,32 @@ description: Homelab infrastructure context — SteamOS/Arch workstation, Podman
 - **Editor:** Neovim
 - **All repos:** `~/github/<repo-name>`
 
+## SteamOS Constraints (hard rules)
+
+These apply to anything that runs on the Steam Deck itself:
+
+- **Detect SteamOS with `ansible_distribution_release == 'holo'`** — never
+  `ansible_distribution == 'SteamOS'`. On-device, `/etc/arch-release` makes Ansible
+  report `Archlinux`, so the distribution check is always wrong.
+- **Never run `steamos-readonly disable`** or otherwise touch the read-only protection,
+  even temporarily. Install everything under `$HOME` with no `become`. If there is no
+  way around root, leave the package unsupported on SteamOS.
+- **Never `exec` a shell from `.bashrc`** (e.g. `exec zsh`). The display manager sources
+  bash startup files during login; replacing the shell mid-session can lock you out. Set
+  the terminal emulator's profile command instead (e.g. Konsole `Command=~/.local/bin/zsh`).
+- Local testing uses Podman, not Docker — go through the wrappers below.
+
 ## Key Wrappers
 
 | Command  | What it does                                               |
 | -------- | ---------------------------------------------------------- |
 | `mtest`  | Molecule wrapper with correct DOCKER_HOST and PATH         |
 | `dswarm` | Docker CLI against the dind Swarm (`tcp://127.0.0.1:2375`) |
+
+Use `mtest` (not raw `molecule`) for local Ansible role tests, and `dswarm` for Swarm
+stacks. Build/test images as `local/<name>:test` and deploy with `--resolve-image never`
+so stale Docker Hub tags don't shadow local builds. `mtest`/`dswarm`/venv PATHs are
+local-only — keep them out of committed repo docs.
 
 ## Podman Socket
 

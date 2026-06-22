@@ -89,7 +89,7 @@ Reference skills (conventions and context):
 
 - `skills/ansible/` — Ansible role conventions and patterns
 - `skills/docker/` — Docker/Swarm conventions
-- `skills/homelab/` — Homelab infrastructure context
+- `skills/steamdeck/` — Steam Deck / SteamOS environment, wrappers, and on-device rules
 - `skills/python/` — Python project conventions
 
 Workflow skills (repo maintenance actions):
@@ -99,6 +99,28 @@ Workflow skills (repo maintenance actions):
 - `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds
 - `skills/update-docker-repo/` — modernize `docker-*` image repos
 - `skills/update-python-repo/` — modernize Python project repos
+
+---
+
+## Agents (Roles)
+
+Subagent personas live in `agents/` and are deployed to `~/.claude/agents/` by the
+`ansible-ai-agents` role. They follow a simplified SDLC: plan → implement → review →
+test → secure → release. Environment-specific detail lives in the skills above (notably
+`steamdeck`), not in the agent definitions.
+
+| Agent       | Use for                                    |
+| ----------- | ------------------------------------------ |
+| `architect` | Planning and design before implementation  |
+| `devlead`   | Implementing features and fixes            |
+| `infraeng`  | Ansible / Docker / ARM / Swarm domain work |
+| `devrev`    | Code review (correctness, simplification)  |
+| `qa`        | Testing, idempotency, dogfooding           |
+| `secrev`    | Security review                            |
+| `releng`    | Versioning, CI/CD, publishing              |
+| `infoarch`  | Documentation                              |
+
+Agents are a Claude Code feature; see `agents/README.md` for portability notes.
 
 ---
 
