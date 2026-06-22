@@ -52,7 +52,7 @@ conventions, and context.
 
 ### Package Management
 - Primary: `yay` (AUR helper) on Arch
-- Python: `/home/deck/.venv/` per-project venvs; use `pip` inside venv
+- Python: Use `uv` for dependency and virtualenv management (`uv run`, `uv sync`); local venvs at `.venv/` in each project
 - Node: `npm` global installs via `~/.local/`
 
 ---
