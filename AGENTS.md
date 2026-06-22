@@ -62,7 +62,7 @@ conventions, and context.
 
 ## Code Style Preferences
 
-- **Python:** Black formatting, ruff linting, type hints preferred
+- **Python:** `ruff format` (Black-compatible) + `ruff` linting, type hints preferred
 - **YAML:** 2-space indent, quoted strings for anything that could be misread
 - **Shell:** `#!/usr/bin/env bash`, `set -euo pipefail`
 - **Markdown:** ATX headings (`#`), fenced code blocks with language tags

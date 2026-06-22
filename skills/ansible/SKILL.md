@@ -51,8 +51,12 @@ PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH"
 
 ## CI Pattern (GitHub Actions)
 
-All roles use `gofrolist/molecule-action@v2` in `.github/workflows/molecule.yml`.
+All roles use `.github/workflows/cicd.yml` with `lint` → `molecule` → `release` jobs.
+Lint and test run via `uv` (`astral-sh/setup-uv`, then `uv sync` and `uv run molecule test`) —
+not the legacy `gofrolist/molecule-action`. See the `update-ansible-role` skill for the full
+template.
 
 ## Galaxy Publishing
 
-Each role has its own `GALAXY_API_KEY` secret. Publish on release tag via GHA.
+Each role has its own `GALAXY_API_KEY` secret. The `release` job publishes to Galaxy via
+`robertdebock/galaxy-action` on pushes to `main` (gated on `lint` + `molecule` passing).
