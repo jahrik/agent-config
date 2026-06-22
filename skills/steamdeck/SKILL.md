@@ -52,19 +52,43 @@ DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
 
 ## dind Swarm Container
 
+Podman can't do Swarm mode, so a real Swarm runs inside a `docker:dind` container named
+`dind` (fuse-overlayfs, `DOCKER_IGNORE_BR_NETFILTER_ERROR=1`, `daemon.json` at
+`~/.config/dind/daemon.json`, stack ports published on localhost). `dswarm` is a wrapper
+at `~/.local/bin/dswarm` → a static docker CLI at `~/.local/bin/docker-cli` pointed at
+`DOCKER_HOST=tcp://127.0.0.1:2375`.
+
 ```bash
-podman start dind          # after reboot
-dswarm service ls          # verify swarm is up
+podman start dind                  # after reboot
+dswarm service ls                  # swarm is pre-initialized; overlay nets: monitor, elk
+dswarm stack deploy --resolve-image never -c docker-compose.yml monitor
 ```
 
-Overlay networks pre-created: `monitor`, `elk`
-
-Monitor stack harness: `~/.config/dind/monitor/monitor-stack.yml`
+- Always deploy with `--resolve-image never` and build/test images as `local/<name>:test` —
+  stale 2018 `jahrik/*` Docker Hub tags otherwise shadow local builds.
+- Ingress (published ports) needs `br_netfilter` on the host: `sudo modprobe br_netfilter`
+  (not loaded by default on SteamOS). Without it, test via `dswarm exec <container> wget ...` —
+  overlay-internal traffic works fine.
+- Overlay networks pre-created: `monitor`, `elk`.
+- Monitor stack harness: `~/.config/dind/monitor/monitor-stack.yml`.
 
 ## Ansible Galaxy
 
-Each ansible role has its own `GALAXY_API_KEY` GitHub secret.
-Venv: `/home/deck/.venv/ansible`
+Each ansible role has its own `GALAXY_API_KEY` GitHub secret (not org-wide). The token
+lives at `galaxy.ansible.com/ui/token/` (log in → Load Token). Venv: `/home/deck/.venv/ansible`
+(`ansible-core` pinned to `2.16.*` for `molecule-docker` compatibility — 2.17+ breaks its
+boolean conditionals).
+
+Update the key across all role repos at once:
+
+```bash
+NEW_KEY="your_token_here"
+for repo in ansible-alacritty ansible-arch-workstation ansible-conky ansible-hyprland \
+            ansible-nvim ansible-vim ansible-zsh ansilbe-yay; do
+  gh secret set GALAXY_API_KEY --repo jahrik/$repo --body "$NEW_KEY"
+  echo "Updated $repo"
+done
+```
 
 If galaxy role install fails with "doesn't appear to contain a role":
 
