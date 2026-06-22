@@ -85,10 +85,20 @@ conventions, and context.
 
 Additional context is available in modular skill files. These are loaded on demand:
 
+Reference skills (conventions and context):
+
 - `skills/ansible/` — Ansible role conventions and patterns
 - `skills/docker/` — Docker/Swarm conventions
 - `skills/homelab/` — Homelab infrastructure context
 - `skills/python/` — Python project conventions
+
+Workflow skills (repo maintenance actions):
+
+- `skills/sync-repos/` — sync all GitHub repos
+- `skills/update-ansible-role/` — update pattern for `ansible-*` repos
+- `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds
+- `skills/update-docker-repo/` — modernize `docker-*` image repos
+- `skills/update-python-repo/` — modernize Python project repos
 
 ---
 
