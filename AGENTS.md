@@ -1,8 +1,8 @@
 # AGENTS.md — Global AI Agent Configuration
 
-This file is loaded automatically by AI coding agents (AGY/Antigravity, Claude Code,
-GitHub Copilot, Cursor, Windsurf, etc.) as the global source of truth for rules,
-conventions, and context.
+The global source of truth for rules, conventions, and context. Loaded automatically by
+AGENTS.md-aware agents — Claude Code (as `~/.claude/CLAUDE.md`) and AGY/Antigravity
+(as `~/.gemini/config/AGENTS.md`), wired up by the `ansible-ai-agents` role.
 
 ---
 
@@ -26,6 +26,9 @@ conventions, and context.
 3. **Use `AGENTS.md` instead of `CLAUDE.md`** for all project-level guidance files.
 4. **Run idempotent commands.** Prefer tools and patterns that can safely re-run.
 5. **Ask before destructive operations** (delete, overwrite, drop, purge, reset).
+6. **Never commit or push to `main`.** Always branch, open a PR, and let the maintainer
+   merge — never `git push` to main and never auto-merge a PR.
+7. **Attribute commits** with a `Co-Authored-By:` trailer for the AI model used.
 
 ---
 
@@ -50,11 +53,11 @@ conventions, and context.
 ## Repository Conventions
 
 - All repos live in `~/github/`
-- Ansible roles: `ansible-<name>` pattern, tested with Molecule + Docker driver
-- Docker images: `docker-<name>` pattern, built for `amd64` and `arm64v8`
-- ARM images: `arm-<name>` pattern
+- Ansible roles: `ansible-<name>`, tested with Molecule (Docker driver); published to Ansible Galaxy
+- Docker images: `docker-<name>`, multi-arch (`amd64`/`arm64`) via buildx; published to Docker Hub (`jahrik/<name>`)
+- ARM images: `arm-<name>`, multi-arch down to Raspberry Pi 3 (`arm/v7`); also Docker Hub
 - CI: GitHub Actions (not Jenkins/Jenkinsfile — those are legacy)
-- Use `AGENTS.md` not `CLAUDE.md` for agent guidance files
+- Use `AGENTS.md` not `CLAUDE.md` for project-level guidance files
 
 ---
 
