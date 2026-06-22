@@ -11,6 +11,7 @@ repo-sync --pull --report-orphans
 Do not interpret or summarize output beyond what `repo-sync` prints. If it fails, show the error.
 
 **Flags:**
+
 - `--fetch` — status snapshot, no writes
 - `--pull` — fetch + fast-forward pull
 - `--checkout` — switch SYNCED repos (merged branch, nothing ahead) to default branch and pull; implies `--pull`
@@ -25,6 +26,7 @@ Source: `/home/deck/github/repo-sync`. Install after changes:
 ```
 
 **Four-layer path for new features:**
+
 1. `internal/git/git.go` — add to `Runner` interface + implement on `*runner`
 2. `internal/config/config.go` — field in `Config` + pointer field in `FileConfig` (yaml support)
 3. `internal/sync/sync.go` — consume in `syncOne` or `Run`
@@ -37,6 +39,7 @@ Source: `/home/deck/github/repo-sync`. Install after changes:
 **Copilot review:** `gh pr comment <N> --body "@copilot review"`
 
 **Resolve threads:**
+
 ```bash
 # 1. Get PRRT_* thread IDs
 gh api graphql -f query='{ repository(owner:"jahrik",name:"repo-sync") { pullRequest(number:N) { reviewThreads(last:20) { nodes { id isResolved } } } } }'

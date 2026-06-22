@@ -1,7 +1,6 @@
 ---
 name: homelab-skill
 description: Homelab infrastructure context — SteamOS/Arch workstation, Podman, Swarm, Ansible pipelines
-
 ---
 
 # Homelab Skill
@@ -18,9 +17,9 @@ description: Homelab infrastructure context — SteamOS/Arch workstation, Podman
 
 ## Key Wrappers
 
-| Command | What it does |
-|---------|-------------|
-| `mtest` | Molecule wrapper with correct DOCKER_HOST and PATH |
+| Command  | What it does                                               |
+| -------- | ---------------------------------------------------------- |
+| `mtest`  | Molecule wrapper with correct DOCKER_HOST and PATH         |
 | `dswarm` | Docker CLI against the dind Swarm (`tcp://127.0.0.1:2375`) |
 
 ## Podman Socket
@@ -48,6 +47,7 @@ Each ansible role has its own `GALAXY_API_KEY` GitHub secret.
 Venv: `/home/deck/.venv/ansible`
 
 If galaxy role install fails with "doesn't appear to contain a role":
+
 ```bash
 rm -rf ~/.ansible/roles/jahrik.*
 ansible-galaxy install -r requirements.yml
@@ -55,9 +55,9 @@ ansible-galaxy install -r requirements.yml
 
 ## Repo Categories
 
-| Pattern | Type |
-|---------|------|
-| `ansible-*` | Ansible roles |
-| `docker-*` | Docker images / compose stacks |
-| `arm-*` | ARM architecture Docker images |
-| `home_lab` | Main Ansible + Swarm deployment pipeline |
+| Pattern     | Type                                     |
+| ----------- | ---------------------------------------- |
+| `ansible-*` | Ansible roles                            |
+| `docker-*`  | Docker images / compose stacks           |
+| `arm-*`     | ARM architecture Docker images           |
+| `home_lab`  | Main Ansible + Swarm deployment pipeline |

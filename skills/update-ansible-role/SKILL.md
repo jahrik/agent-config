@@ -9,6 +9,7 @@ Otherwise, scan `/home/deck/github` for all `ansible-*` directories, sort them a
 **Skip a repo** if it is not a standard Ansible role (no `tasks/main.yml` — e.g. playbook repos like `ansible-glastopf`, `ansible-awx`).
 
 **A repo needs updating** if any of the following are true:
+
 - `.github/workflows/cicd.yml` uses `actions/checkout` older than `@v5` or `astral-sh/setup-uv` older than `@v8.1.0`
 - `.github/workflows/cicd.yml` still uses `gofrolist/molecule-action` (replaced by direct `uv run molecule test`)
 - `.github/workflows/cicd.yml` still uses `pip3 install yamllint ansible-lint` or `pip3 install uv` (replaced by `astral-sh/setup-uv` + `uv sync`)
@@ -44,13 +45,16 @@ Work through all repos in a single run. After finishing each repo, move to the n
 ## Steps (apply to each repo in turn)
 
 **One branch, one PR per repo per run** — the very first action on any repo is to cut (or re-use) a single branch:
+
 ```bash
 git checkout main && git pull --ff-only
 git checkout -b update-role
 ```
+
 Every fix from steps 1-10 accumulates on that branch. Open exactly one PR when all fixes are done and local tests pass. Do not open a PR partway through and then open a second one for remaining fixes — gather everything first, then open one PR.
 
 If `update-role` already exists and its PR was previously merged, delete the stale local branch and cut a fresh one from the updated `main`:
+
 ```bash
 git checkout main && git pull --ff-only
 git branch -D update-role
@@ -58,9 +62,11 @@ git checkout -b update-role
 ```
 
 ### 1. Understand the role
+
 Read all key files in parallel — `defaults/main.yml`, `tasks/main.yml`, every file under `tasks/`, `meta/main.yml`, `molecule/default/molecule.yml`, `.github/workflows/cicd.yml`, and `README.md`. Issue all Read calls in a single message so they execute concurrently. Build a clear picture of what the role does, what OS families it supports, and what variables it exposes before writing any changes.
 
 ### 2. Fix tasks
+
 Scan all files under `tasks/` for these known bugs:
 
 **Copy-paste bugs** — wrong package names, wrong paths, wrong service names carried over from another role.
@@ -80,6 +86,7 @@ Scan all files under `tasks/` for these known bugs:
 **Template + follow-up file task for permissions** — if a `template` task sets `mode: '0644'` and a separate `file` task then sets `mode: '0755'` on the same file, every run reports changed. Fix: set the correct mode directly in the `template` task, drop the `file` task.
 
 **`update_cache: true` in Arch pacman tasks** — CI containers run a cached Arch image whose pacman DB may be stale. Without `update_cache: true`, installs fail with 404 for packages that have been bumped since the image was built. For main role install tasks, split into two tasks: a dedicated cache-update task with `changed_when: false`, then a separate package install task without `update_cache`. This correctly reports changed only when packages are actually installed, and still protects against stale-DB 404s:
+
 ```yaml
 - name: Update pacman cache (Arch Linux)
   become: true
@@ -95,7 +102,7 @@ Scan all files under `tasks/` for these known bugs:
     state: present
 ```
 
-**`update_cache: true` idempotency in dependency roles** — For *prerequisite* install tasks in dependency roles (e.g. `jahrik.nerd_fonts : Install fontconfig and unzip`), where the packages are very common and 404 is not a realistic risk, remove `update_cache: true` entirely — prepare.yml already synced the DB.
+**`update_cache: true` idempotency in dependency roles** — For _prerequisite_ install tasks in dependency roles (e.g. `jahrik.nerd_fonts : Install fontconfig and unzip`), where the packages are very common and 404 is not a realistic risk, remove `update_cache: true` entirely — prepare.yml already synced the DB.
 
 **Verify binary paths for source-built packages** — on Debian, packages built from source (e.g. polybar's `build.sh`) install to `/usr/local/bin/`, not `/usr/bin/`. Arch AUR packages go to `/usr/bin/`. Use `ansible.builtin.command: which <pkg>` with `changed_when: false` / `failed_when: false` and assert `rc == 0` instead of hardcoding the path.
 
@@ -118,10 +125,12 @@ Scan all files under `tasks/` for these known bugs:
 Applies if the role installs something that plausibly runs on a Steam Deck in desktop mode (terminal emulators, editors, CLI tools, GUI apps). Skip this step's detail entirely for roles where it obviously doesn't apply (services, server-only tools).
 
 When it applies, don't re-derive the pattern from scratch — read the working code directly and adapt it:
+
 - `ansible-nvim`: `tasks/install.yml`, `tasks/steamdeck.yml`, `tasks/uninstall.yml`, `molecule/steamdeck/`, `molecule/localhost/` — canonical structure; downloads static binaries from the project's own GitHub releases.
 - `ansible-alacritty`: `tasks/steamos.yml` — the fallback pattern when no static binary or Flathub listing exists: extract the binary straight out of an archived Arch `.pkg.tar.zst` (plain zstd tarball, no pacman/root/build needed) via `ansible.builtin.unarchive` with `remote_src: true`; also has the desktop-entry + icon + `kbuildsycoca6` pattern for making a GUI app show up in KDE's launcher, and a `meta/main.yml`/README/AGENTS.md fully brought up to this standard as a second template to diff against.
 
 Checklist when adapting:
+
 - **Hard constraint, never violate:** never run `steamos-readonly disable` or otherwise touch SteamOS's read-only protection, even temporarily. Everything installs under `$HOME`, no `become`. If there's no way around it, leave the package unsupported on SteamOS.
 - **Never use `exec zsh` (or any shell) in `.bashrc` on SteamOS** — the display manager sources bash startup files during session init. `exec` replaces bash with the new shell mid-session; PAM rejects shells not in `/etc/shells` (read-only on SteamOS), and a SteamOS update can invalidate user-local binaries with no bash fallback, causing a login lockout. To give users zsh as their default terminal, configure the terminal emulator (e.g. Konsole profile `Command=~/.local/bin/zsh`) — do not touch the login shell.
 - **SteamOS detection** — use `ansible_distribution_release == 'holo'` throughout tasks. Do NOT use `ansible_distribution == 'SteamOS'` — on the real Steam Deck, Ansible reads `/etc/arch-release` first and reports `Archlinux`, so `ansible_distribution` is always wrong on the device. `ansible_distribution_release` reads `VERSION_CODENAME` from `/etc/os-release`, which is `holo` on all SteamOS versions and is unaffected by `/etc/arch-release`.
@@ -131,6 +140,7 @@ Checklist when adapting:
 - `tasks/uninstall.yml` needs the same `ansible_distribution_release == 'holo'` branch to remove the home-dir artifacts instead of calling `package: state: absent`.
 - Test both ways: `molecule/steamdeck` (Docker, Arch image, `prepare.yml` fakes SteamOS detection — add a matching CI job, see step 4) and `molecule/localhost` (real local-connection run against actual Deck hardware).
 - **SteamOS detection in `prepare.yml`**: to make `ansible_distribution_release == 'holo'` work in the Arch Docker container, the simulated `/etc/os-release` must include `VERSION_CODENAME=holo`, AND `/etc/arch-release` must be removed (Ansible prioritises it over `/etc/os-release` on Arch-based images). Template:
+
 ```yaml
 - name: Remove /etc/arch-release to allow SteamOS detection
   become: true
@@ -151,6 +161,7 @@ Checklist when adapting:
     dest: /etc/os-release
     mode: "0644"
 ```
+
 - Document the OS support matrix in README.md/AGENTS.md (ansible-nvim's "OS Support"/"Steam Deck Notes" format).
 
 ### 2c. Add macOS support (if applicable)
@@ -158,6 +169,7 @@ Checklist when adapting:
 Applies whenever the package has a Homebrew formula or cask. Read `ansible-alacritty`'s `tasks/darwin.yml`/`tasks/install.yml`/`tasks/uninstall.yml` (one-line cask install, `become: false`) and `ansible-nvim`'s `tasks/darwin.yml` (multi-package formula install) directly — pick the shape that matches the role at hand rather than reinventing it.
 
 Checklist:
+
 - `tasks/darwin.yml`: `community.general.homebrew` (formula) or `community.general.homebrew_cask` (GUI app), `become: false` throughout.
 - `tasks/install.yml`: add `include_tasks: darwin.yml` gated on `ansible_os_family == 'Darwin'`, and exclude Darwin from the generic `package:` install condition (`ansible_os_family not in ['Archlinux', 'Darwin']`, extending whatever exclusion list already exists).
 - `tasks/uninstall.yml`: mirror with `state: absent` on the same homebrew module, gated the same way, and exclude Darwin from the generic `package: state: absent` condition.
@@ -169,7 +181,9 @@ Checklist:
 - No local way to test the macOS path (no Mac, no macOS CI image for Podman) — the GitHub Actions `macos` job on the PR is the only verification; watch it instead of trying to fake it locally.
 
 ### 3. Add / update `.yamllint`
+
 If missing or different, create/replace with this content (note the `ignore: | .venv/` block — required to prevent yamllint from scanning the virtualenv):
+
 ```yaml
 ---
 extends: default
@@ -213,7 +227,9 @@ rules:
 ```
 
 ### 3b. Add / update `.ansible-lint`
+
 If missing or different, create/replace with:
+
 ```yaml
 ---
 profile: production
@@ -223,10 +239,13 @@ exclude_paths:
   - .ansible/
   - tests/
 ```
+
 `profile: production` is the highest ansible-lint profile. All roles in this repo already pass at this level. `molecule/` and `.ansible/` are excluded — the latter prevents Galaxy-installed roles from being scanned. `tests/` is excluded because old test scaffolding triggers `syntax-check[specific]`.
 
 ### 3c. Add / update `pyproject.toml`
+
 All repos use `uv` for dependency management. If `pyproject.toml` is missing or non-standard, create/replace with:
+
 ```toml
 [project]
 name = "ansible-ROLENAME"
@@ -240,10 +259,13 @@ dependencies = [
     "yamllint>=1.38.0",
 ]
 ```
+
 The `<3.14` upper bound is required — Python 3.14 requires ansible-core >= 2.20, incompatible with our `<2.18` pin. After writing `pyproject.toml`, run `uv lock` to generate/update `uv.lock`.
 
 ### 4. Update CI workflow (`.github/workflows/cicd.yml`)
+
 Replace the entire workflow with the standard template. Key points:
+
 - Use `astral-sh/setup-uv@v8.1.0` (not `actions/setup-python` + `pip3 install uv` — setup-uv handles install and caching; it no longer publishes minor tags so use the full version)
 - Pin `python-version: '3.12'` (not `'3.x'` — that now resolves to 3.14 which is incompatible)
 - Replace `gofrolist/molecule-action@v2` with direct `uv run molecule test` — uses pinned deps from `uv.lock`
@@ -251,6 +273,7 @@ Replace the entire workflow with the standard template. Key points:
 - All repos must have a root `requirements.yml` (see step 5c) so the Galaxy install step is uniform
 
 **Standard template (basic — lint + molecule + release):**
+
 ```yaml
 ---
 name: CICD
@@ -262,7 +285,6 @@ on:
   workflow_dispatch:
 
 jobs:
-
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -272,7 +294,7 @@ jobs:
       - name: Set up Python 3
         uses: astral-sh/setup-uv@v8.1.0
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Install test dependencies
         run: uv sync
       - name: Install Galaxy requirements
@@ -291,14 +313,14 @@ jobs:
       - name: Set up Python 3
         uses: astral-sh/setup-uv@v8.1.0
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Install test dependencies
         run: uv sync
       - name: Run Molecule
         run: uv run molecule test
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
 
   release:
     name: Release
@@ -318,43 +340,47 @@ jobs:
 **If the role has a `molecule/steamdeck` scenario**, add a `steamdeck` job (identical to `molecule` but `run: uv run molecule test -s steamdeck`) and add `steamdeck` to `release`'s `needs:`.
 
 **If the role has a `molecule/localhost` scenario (macOS)**, add a `macos` job and add `macos` to `release`'s `needs:`. The macOS job must split Galaxy install into role + collection steps — a single `ansible-galaxy install` with `-p` does not reliably install collections on the macOS runner:
+
 ```yaml
-  macos:
-    name: macOS
-    runs-on: macos-latest
-    steps:
-      - name: Check out the codebase
-        uses: actions/checkout@v5
-        with:
-          path: jahrik.ROLE
-      - name: Set up Python 3
-        uses: astral-sh/setup-uv@v8.1.0
-        with:
-          python-version: '3.12'
-      - name: Install test dependencies
-        working-directory: jahrik.ROLE
-        run: uv sync
-      - name: Install Galaxy role requirements
-        working-directory: jahrik.ROLE
-        run: uv run ansible-galaxy role install -r molecule/localhost/requirements.yml -p ${{ github.workspace }}
-      - name: Install Galaxy collection requirements
-        working-directory: jahrik.ROLE
-        run: uv run ansible-galaxy collection install -r molecule/localhost/requirements.yml
-      - name: Run converge
-        working-directory: jahrik.ROLE
-        env:
-          ANSIBLE_ROLES_PATH: ${{ github.workspace }}
-        run: uv run ansible-playbook molecule/localhost/converge.yml -i "localhost," -c local
-      - name: Run verify
-        working-directory: jahrik.ROLE
-        env:
-          ANSIBLE_ROLES_PATH: ${{ github.workspace }}
-        run: uv run ansible-playbook molecule/localhost/verify.yml -i "localhost," -c local
+macos:
+  name: macOS
+  runs-on: macos-latest
+  steps:
+    - name: Check out the codebase
+      uses: actions/checkout@v5
+      with:
+        path: jahrik.ROLE
+    - name: Set up Python 3
+      uses: astral-sh/setup-uv@v8.1.0
+      with:
+        python-version: "3.12"
+    - name: Install test dependencies
+      working-directory: jahrik.ROLE
+      run: uv sync
+    - name: Install Galaxy role requirements
+      working-directory: jahrik.ROLE
+      run: uv run ansible-galaxy role install -r molecule/localhost/requirements.yml -p ${{ github.workspace }}
+    - name: Install Galaxy collection requirements
+      working-directory: jahrik.ROLE
+      run: uv run ansible-galaxy collection install -r molecule/localhost/requirements.yml
+    - name: Run converge
+      working-directory: jahrik.ROLE
+      env:
+        ANSIBLE_ROLES_PATH: ${{ github.workspace }}
+      run: uv run ansible-playbook molecule/localhost/converge.yml -i "localhost," -c local
+    - name: Run verify
+      working-directory: jahrik.ROLE
+      env:
+        ANSIBLE_ROLES_PATH: ${{ github.workspace }}
+      run: uv run ansible-playbook molecule/localhost/verify.yml -i "localhost," -c local
 ```
+
 Key: `-p ${{ github.workspace }}` installs role deps alongside the checkout. `ANSIBLE_ROLES_PATH: ${{ github.workspace }}` finds both the role and its dependencies. `molecule/localhost/requirements.yml` must list both `roles:` and `collections:` (including `community.general`).
 
 ### 4b. Update molecule platform images to current OS versions
+
 Check `molecule/default/molecule.yml` for outdated platform images and bump to the latest:
+
 - Ubuntu: `geerlingguy/docker-ubuntu2404-ansible`. Old images (`ubuntu1804`, `ubuntu2004`, `ubuntu2204`) ship EOL or stale package sources — dead PPAs and expired third-party repos fail converge. Fall back to `ubuntu2204` only if the role genuinely breaks on 24.04.
 - Arch: keep `jahrik/docker-archlinux-ansible` (rolling, no version bump) but ensure `pull: true` is set so the latest image is fetched.
 - Also update version-pinned third-party repos in `tasks/` that the old image hid (e.g. NodeSource `node_17.x` is dead — use `deb https://deb.nodesource.com/node_20.x nodistro main` with key `https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key`).
@@ -373,7 +399,9 @@ Check `molecule/default/molecule.yml` for outdated platform images and bump to t
 - **Source builds often no longer needed** — packages like polybar that previously required building from source are now in Ubuntu universe. Check `apt show <pkg>` output in the container before keeping a complex source-build task.
 
 ### 5. Add `molecule/default/requirements.yml`
+
 Always add this — it ensures `community.general` is available on the CI controller (needed for `pacman` and other modules):
+
 ```yaml
 ---
 collections:
@@ -381,7 +409,9 @@ collections:
 ```
 
 ### 5b. Add `molecule/default/prepare.yml` for Arch scenarios
+
 If the `molecule/default` scenario tests on Arch (`jahrik/docker-archlinux-ansible`), add a `prepare.yml` that upgrades all packages before converge. This prevents `update_cache: true` in role install tasks from finding newly-released package versions on the idempotency run:
+
 ```yaml
 ---
 - name: Prepare
@@ -395,18 +425,23 @@ If the `molecule/default` scenario tests on Arch (`jahrik/docker-archlinux-ansib
       changed_when: false
       when: ansible_os_family == 'Archlinux'
 ```
+
 Note: Do NOT add a `DisableSandbox` lineinfile task — it is now baked into the `jahrik/docker-archlinux-ansible` image itself. If an existing `prepare.yml` has a `DisableSandbox` task, remove it.
 
 For `molecule/steamdeck` scenarios, add the `pacman -Syu` upgrade task BEFORE the SteamOS OS-simulation steps (remove `/etc/arch-release`, write `/etc/os-release` with `VERSION_CODENAME=holo` — see step 2b for the full template).
 
 ### 5c. Add / update root `requirements.yml`
+
 All repos must have a root `requirements.yml` so the lint job Galaxy install step is uniform. Repos with no Galaxy role dependencies get a minimal file:
+
 ```yaml
 ---
 collections:
   - name: community.general
 ```
+
 Repos with Galaxy role dependencies list them under `roles:`:
+
 ```yaml
 ---
 roles:
@@ -414,9 +449,11 @@ roles:
 collections:
   - name: community.general
 ```
+
 Use the `roles:` key format — not the old flat list format (`- name: jahrik.foo` at the top level). The `ansible-arch-workstation` old format (`- name: ...` without `roles:`) is incorrect.
 
 ### 6. Update `molecule/default/verify.yml`
+
 Replace the boilerplate (`assert: that: true`) with real assertions. For each binary the role installs: stat-check it exists, then run `--version` and assert on the output. Also check deployed config files. Follow this standard:
 
 ```yaml
@@ -457,14 +494,17 @@ Replace the boilerplate (`assert: that: true`) with real assertions. For each bi
 ```
 
 **Exceptions to `--version` checks:**
+
 - **GPU-dependent terminals** (alacritty, ghostty): add `failed_when: false` on the command and assert `rc == 0` — they fail without a display but should still be present.
 - **Wayland compositors** (sway, hyprland): skip `--version` entirely — they require kernel capabilities (`setuid`/`setcap`) that are absent in unprivileged Docker containers. A stat check on the binary is sufficient; running it at all will fail with `Operation not permitted`.
 - **Tools installed to non-standard paths** (e.g. SteamOS `~/.local/bin/`): check the correct path, not `/usr/bin/`.
 
 ### 7. Update `README.md`
+
 If the README is still the boilerplate Ansible Galaxy template (contains phrases like "A brief description of the role goes here" or "Any pre-requisites that may not be covered by Ansible itself"), rewrite it with actual content: what the role does, supported OS, key variables, example playbook, and testing instructions.
 
 Use standard `molecule` commands in the README — **not `mtest`**. `mtest` is a local dev wrapper unknown to anyone else reading the repo. Testing section should show:
+
 ```bash
 uv sync
 source .venv/bin/activate
@@ -474,11 +514,14 @@ molecule test
 ```
 
 ### 8. Add `AGENTS.md`
+
 Create `AGENTS.md` (not `CLAUDE.md`) with:
+
 - Role purpose (one paragraph)
 - Key variables table (name, default, description) from `defaults/main.yml`
 - Task flow (how `tasks/main.yml` branches)
 - Testing commands — must include `uv sync` + activate before lint/molecule:
+
 ```bash
 uv sync
 source .venv/bin/activate
@@ -490,13 +533,16 @@ molecule test
 **Repo-facing content only** — committed docs (AGENTS.md and README alike) must never contain machine-specific details: no `mtest`, no `~/.venv/...` PATH prefixes, no Podman-shim or local Steam Deck notes. That context lives in the global `~/.claude/CLAUDE.md`. If an existing AGENTS.md contains `mtest` or venv PATH lines, fix them here.
 
 ### 9. Lint locally
+
 ```bash
 PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH" yamllint . && \
 PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH" ansible-lint
 ```
+
 Fix all errors before proceeding. ansible-lint catches non-FQCN modules, risky commands, schema issues, `meta-no-tags`, `no-changed-when`, `latest[git]`, and other violations that yamllint misses.
 
 ### 10. Spawn background test agent, then continue to next repo
+
 After lint passes, spawn a **background subagent** to run molecule tests while you immediately move on to steps 1-9 of the next repo:
 
 ```
@@ -522,7 +568,9 @@ Do NOT wait for the subagent. Continue immediately to steps 1-9 for the next rep
 `mtest` sets `DOCKER_HOST` and `PATH` correctly — never spell out the full env by hand.
 
 ### 11. Commit, push, open PR
+
 This step happens once per repo, after all fixes from steps 1-10 are complete and local tests pass. The branch was already cut at the start of this repo's work (see the "one branch, one PR" rule above).
+
 - Commit all changes in a single commit (or a small series of logical commits, all on the same `update-role` branch)
 - Commit message: summarise what changed and why (not just "add AGENTS.md")
 - PR title: `Update role: <repo-name>`
@@ -530,6 +578,7 @@ This step happens once per repo, after all fixes from steps 1-10 are complete an
 - **Never open a PR mid-fixes and then open another for remaining work in the same run.** If a fix is discovered while CI is running (e.g. a lint failure revealed by GitHub Actions), push the fix to the same branch — it goes into the open PR, not a new one.
 
 ### 12. Monitor CI and fix failures
+
 Spawn a background subagent to watch the run while you continue working on other repos:
 
 ```
@@ -551,6 +600,7 @@ If CI fails: fix locally → lint → `mtest test` → commit → push. The open
 ---
 
 ## Notes
+
 - `mtest` (`~/.local/bin/mtest`): sets `DOCKER_HOST` + `PATH` for Podman+molecule-docker, clears stale role-cache symlinks before running. Always prefer it over raw `molecule` for local runs.
 - `ansible-core` is pinned to `2.16.*` in `~/.venv/ansible` — 2.17+ breaks molecule-docker boolean conditionals.
 - Arch test image `jahrik/docker-archlinux-ansible`: has `DisableSandbox` baked into `/etc/pacman.conf` and `community.general` pre-installed. Do NOT add DisableSandbox to `prepare.yml`. Rebuilds daily — always set `pull: true` in `molecule.yml`.

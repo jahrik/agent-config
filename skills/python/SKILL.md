@@ -1,7 +1,6 @@
 ---
 name: python-skill
 description: Python project conventions, modern tooling with uv, ruff linting, and CI patterns
-
 ---
 
 # Python Skill

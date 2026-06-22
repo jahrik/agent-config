@@ -1,7 +1,6 @@
 ---
 name: ansible-skill
 description: Ansible role conventions, molecule testing, and patterns for this homelab
-
 ---
 
 # Ansible Skill
@@ -44,6 +43,7 @@ mtest test        # full cycle
 ```
 
 Environment required:
+
 ```bash
 DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
 PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH"

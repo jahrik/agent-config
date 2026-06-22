@@ -1,7 +1,6 @@
 ---
 name: docker-skill
 description: Docker image conventions, Swarm deployment, and dswarm patterns for this homelab
-
 ---
 
 # Docker Skill
@@ -45,11 +44,13 @@ dswarm service logs <service>
 **Always use `--resolve-image never`** — Docker Hub tags may be stale.
 
 If published ports don't respond, load `br_netfilter`:
+
 ```bash
 sudo modprobe br_netfilter
 ```
 
 Test via internal overlay if ingress is unavailable:
+
 ```bash
 dswarm exec <container> wget -qO- http://localhost:<port>
 ```

@@ -3,12 +3,14 @@
 ## What belongs in this repo
 
 ✅ **Safe to commit:**
+
 - Markdown rules and instructions (AGENTS.md, skills)
 - Template placeholders like `{{ variable_name }}`
 - Tool preferences, coding standards, workflow descriptions
 - Public usernames and GitHub handles
 
 ❌ **Never commit:**
+
 - API keys, tokens, or credentials of any kind
 - Internal IP addresses or hostnames
 - SSH keys or certificates
@@ -21,6 +23,7 @@
 This repo uses two layers of automated secret detection:
 
 ### 1. Pre-commit hooks (local)
+
 [gitleaks](https://github.com/gitleaks/gitleaks) and [detect-secrets](https://github.com/Yelp/detect-secrets)
 scan every commit before it lands. Install with:
 
@@ -30,6 +33,7 @@ pre-commit install
 ```
 
 ### 2. GitHub Secret Scanning (remote)
+
 GitHub automatically scans all pushes to this public repo for known secret patterns
 (API keys, tokens, credentials) and alerts the repo owner immediately.
 
@@ -40,6 +44,7 @@ If your skills or rules need to reference environment-specific values
 
 ```markdown
 # In a skill file — use placeholders, not real values
+
 The homelab is managed at `{{ ai_agents_homelab_host }}`.
 ```
 

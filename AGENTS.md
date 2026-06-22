@@ -32,6 +32,7 @@ conventions, and context.
 ## Tooling & Environment
 
 ### Ansible / Molecule
+
 - Use `mtest` wrapper (`~/.local/bin/mtest`) for molecule commands.
 - Required environment:
   ```bash
@@ -42,6 +43,7 @@ conventions, and context.
 - Docker shim: `~/.local/bin/docker` → `podman`
 
 ### Docker Swarm (dswarm)
+
 - Use `dswarm` wrapper (`~/.local/bin/dswarm`)
 - Always deploy with `--resolve-image never`
 - Build/test images as `local/<name>:test`
@@ -51,6 +53,7 @@ conventions, and context.
   ```
 
 ### Package Management
+
 - Primary: `yay` (AUR helper) on Arch
 - Python: Use `uv` for dependency and virtualenv management (`uv run`, `uv sync`); local venvs at `.venv/` in each project
 - Node: `npm` global installs via `~/.local/`
