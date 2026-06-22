@@ -8,9 +8,10 @@ Personal AI agent configuration — plug-and-play with [ansible-ai-agents](https
 
 ```
 agent-config/
-├── AGENTS.md                  # Global rules loaded by all agents (AGY, Claude Code, Copilot, etc.)
+├── AGENTS.md                  # Global rules loaded by all agents (Claude Code, AGY/Antigravity)
 ├── agents/                    # Subagent personas → ~/.claude/agents/ (plan, review, qa, secrev, ...)
 ├── skills/                    # Modular skill packs (auto-discovered by AGY/Antigravity)
+│   ├── agent-config-authoring/ # How to author skills, subagents, and rules here
 │   ├── ansible/               # Ansible role conventions and patterns
 │   ├── docker/                # Docker/Swarm conventions
 │   ├── steamdeck/             # Steam Deck / SteamOS environment and on-device rules

@@ -74,6 +74,7 @@ Reference skills (conventions and context):
 
 Workflow skills (repo maintenance actions):
 
+- `skills/agent-config-authoring/` — how to author skills, subagents, and rules in this repo
 - `skills/sync-repos/` — sync all GitHub repos
 - `skills/update-ansible-role/` — update pattern for `ansible-*` repos
 - `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds
