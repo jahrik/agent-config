@@ -32,6 +32,35 @@ Work through all repos in a single run; after each repo, move to the next withou
 
 ---
 
+## Delegating to subagents
+
+This pattern is an orchestration. You stay the driver — own the per-repo branch, the sequencing,
+the single PR, and the final go/no-go — but hand each self-contained step to the matching subagent.
+Run the read-only review agents (`devrev`, `secrev`) and any independent work in parallel.
+
+Subagents start cold: give each one the repo path, the branch, and a tight scope, and have it
+**report back rather than open PRs or commit**. **Vet a subagent's findings against ground truth** —
+a cold agent can be wrong (e.g. claim a current GitHub Action "doesn't exist", or misread an
+idempotency guard); confirm load-bearing claims yourself before acting on them.
+
+| Step                                | Agent               |
+| ----------------------------------- | ------------------- |
+| 1. Understand the role              | `architect`         |
+| 2. Fix tasks                        | `infraeng`          |
+| 3–5. Lint configs, CI, requirements | `releng`            |
+| 6. Rewrite `verify.yml`             | `infraeng`          |
+| 7–8. README + AGENTS.md             | `infoarch`          |
+| 9b. Pre-PR review (parallel)        | `devrev` + `secrev` |
+| 10. Run `molecule test`             | `qa`                |
+| 12. Monitor CI, triage failures     | `releng`            |
+
+Delegation is a judgement call, not a mandate: a small one-file fix is faster done inline — reach
+for an agent when a step is sizeable or benefits from a dedicated lens. Don't spawn an agent to
+re-run work the harness already tracks (e.g. a `molecule test` you launched in the background) —
+wait for it instead.
+
+---
+
 ## Steps (apply to each repo in turn)
 
 **One branch, one PR per repo per run.** Cut a single branch first and accumulate every fix on it:
@@ -44,13 +73,13 @@ git checkout -b update-role
 Open exactly one PR when all fixes are done and local tests pass. If `update-role` already exists
 from a merged PR, `git branch -D update-role` and cut a fresh one from the updated `main`.
 
-### 1. Understand the role
+### 1. Understand the role — `architect`
 
 Read the key files in parallel — `defaults/main.yml`, everything under `tasks/`, `meta/main.yml`,
 `molecule/default/molecule.yml`, `.github/workflows/cicd.yml`, `README.md`. Build a clear picture of
 what the role does, which OS families it supports, and what variables it exposes before changing anything.
 
-### 2. Fix tasks
+### 2. Fix tasks — `infraeng`
 
 Scan all files under `tasks/` for these known bugs:
 
@@ -82,7 +111,7 @@ Scan all files under `tasks/` for these known bugs:
 > read-only, and never disable a platform's security protections. Capture any such target's specifics
 > in the project's environment notes (`AGENTS.md`), not in this skill.
 
-### 3. Add / update `.yamllint`, `.ansible-lint`, `pyproject.toml`
+### 3. Add / update `.yamllint`, `.ansible-lint`, `pyproject.toml` — `releng`
 
 `.yamllint` (the `ignore: | .venv/` block is required so yamllint skips the virtualenv):
 
@@ -131,7 +160,7 @@ dependencies = [
 ]
 ```
 
-### 4. Update CI workflow (`.github/workflows/cicd.yml`)
+### 4. Update CI workflow (`.github/workflows/cicd.yml`) — `releng`
 
 Replace with the standard template. Use `astral-sh/setup-uv` (pin the full version — it no longer
 publishes minor tags), pin `python-version: '3.12'` (not `'3.x'`, which resolves to a version
@@ -239,7 +268,7 @@ converge (prevents the install-task `update_cache` from finding newer versions o
       when: ansible_os_family == 'Archlinux'
 ```
 
-### 6. Update `molecule/default/verify.yml`
+### 6. Update `molecule/default/verify.yml` — `infraeng`
 
 Replace boilerplate with real assertions. For each binary: stat it exists, run `--version`, assert on
 the output; also stat deployed config files.
@@ -269,7 +298,7 @@ the output; also stat deployed config files.
 Exceptions: GPU-dependent terminals (alacritty, ghostty) need `failed_when: false` + assert `rc == 0`;
 Wayland compositors (sway, hyprland) can't run in unprivileged containers — stat the binary only.
 
-### 7. README and 8. AGENTS.md
+### 7. README and 8. AGENTS.md — `infoarch`
 
 Rewrite a boilerplate README with real content: what the role does, supported OS, key variables,
 example playbook, and a testing section using **plain `molecule`** (not any local wrapper):
@@ -296,11 +325,29 @@ uv run yamllint . && uv run ansible-lint
 Fix all errors before proceeding — ansible-lint catches non-FQCN modules, risky commands, schema
 issues, `meta-no-tags`, `no-changed-when`, and `latest[git]`.
 
-### 10. Test, then continue
+### 9b. Pre-PR review — `devrev` + `secrev` (parallel)
 
-Run `molecule test` (the project's local harness, per `AGENTS.md`). To keep moving through the walk,
-run tests for the finished repo in a background subagent while you start the next repo's steps 1–9,
-but **confirm PASS before opening that repo's PR**.
+Once the role lints clean and before opening the PR, dispatch both review agents in parallel against
+the branch diff; they are read-only so they cannot collide:
+
+- **`devrev`** — correctness and idempotency: tasks that always report `changed`, missing OS-family
+  guards, copy-paste bugs across near-identical task files, FQCN, verify assertions that can
+  false-pass/false-fail.
+- **`secrev`** — anything that downloads-and-executes (`get_url` + `command` of an install script),
+  unpinned/unverified sources, predictable `/tmp` paths, committed secrets or hardcoded IPs, and
+  weakened platform security.
+
+Triage their findings: fix the real ones on the branch, and discard cold-start mistakes you've
+verified are wrong. Lint passing is necessary but not sufficient — a clean lint says nothing about
+whether an installer actually works on every platform; only `molecule test` (step 10) proves that.
+
+### 10. Test, then continue — `qa`
+
+Run `molecule test` (the project's local harness, per `AGENTS.md`) and have `qa` confirm the result:
+converge + idempotence + verify all green on every platform. To keep moving through the walk, let
+that test run in the background while you start the next repo's steps 1–9, but **confirm PASS before
+opening that repo's PR**. Read the actual play recaps — don't trust an exit code alone (a wrapping
+pipe or trailing command can mask a non-zero `molecule` exit).
 
 ### 11. Commit, push, open PR
 
@@ -311,7 +358,7 @@ One PR per repo, after all fixes are done and local tests pass:
 - PR body: bullet list of changes + a test-plan checklist
 - Never open a PR mid-fixes and a second one for remaining work — push follow-up fixes to the same branch.
 
-### 12. Monitor CI and fix failures
+### 12. Monitor CI and fix failures — `releng`
 
 ```bash
 RUN=$(gh run list --branch update-role --json databaseId --limit 1 --jq '.[0].databaseId')
