@@ -28,8 +28,8 @@ This repo uses two layers of automated secret detection:
 scan every commit before it lands. Install with:
 
 ```bash
-pip install pre-commit
-pre-commit install
+uvx pre-commit install            # install the git hook
+uvx pre-commit run --all-files    # scan everything now
 ```
 
 ### 2. GitHub Secret Scanning (remote)
@@ -37,18 +37,15 @@ pre-commit install
 GitHub automatically scans all pushes to this public repo for known secret patterns
 (API keys, tokens, credentials) and alerts the repo owner immediately.
 
-## Sensitive values in agent config
+## Environment-specific values
 
-If your skills or rules need to reference environment-specific values
-(hostnames, usernames, service URLs), use Ansible variables instead:
+This repo is a **portable base** of plain-markdown rules and skills. The `ansible-ai-agents`
+role _symlinks_ these files into place — it does not template values into them. So keep
+environment-specific detail (hostnames, usernames, service URLs, local paths) **out of the
+committed skills and the global `AGENTS.md`**.
 
-```markdown
-# In a skill file — use placeholders, not real values
-
-The homelab is managed at `{{ ai_agents_homelab_host }}`.
-```
-
-The `ansible-ai-agents` role fills these in from your inventory/vault at deploy time.
+That detail belongs in each repository's own `AGENTS.md` (or a private file outside this shared
+config), where it's read in context rather than baked into the shared base.
 
 ## Reporting
 
