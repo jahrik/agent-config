@@ -1,0 +1,133 @@
+---
+name: agent-config-authoring
+description: Conventions and steps for authoring subagents and global rules in the agent-config repo — formats, context budget, the portable-vs-environment split, deploy, and validation. Use when creating or editing a subagent or a global rule. (For skills, see skill-creator.)
+---
+
+# Agent-Config Authoring
+
+How to add or edit **subagents** and **global rules** in this repo. For authoring **skills**, see
+the `skill-creator` skill. `agent-config` is the **single source of truth**; the `ansible-ai-agents`
+role symlinks it into each tool.
+
+## Repo layout
+
+```
+agent-config/
+├── AGENTS.md          # global rules — always loaded, keep lean
+├── agents/            # Claude Code subagent personas (one .md each)
+└── skills/            # modular skills (one dir each, with SKILL.md)
+```
+
+## Which layer? (rule vs skill vs subagent)
+
+- **Global rule** → `AGENTS.md`. A short, universal directive that should apply to _every_
+  session (e.g. "never push to main"). Always loaded — add sparingly.
+- **Skill** → `skills/<name>/SKILL.md`. Reference knowledge or a repeatable procedure,
+  loaded **on demand** when its `description` matches. Authored per the `skill-creator` skill.
+- **Subagent** → `agents/<name>.md`. A persona with a defined stance and tool scope,
+  spawned for a task. Claude Code only.
+
+## Authoring a subagent
+
+Create `agents/<slug>.md`:
+
+```markdown
+---
+name: <slug>
+description: Use to <when to dispatch this agent — used for routing>
+tools: Read, Grep, Glob, Bash # omit to inherit all; scope reviewers read-only
+model: sonnet # opus for heavy reasoning (architect, secrev); omit to inherit
+---
+
+You are <role>. <One-line charter.>
+
+**Distinct from:**
+
+- `<neighbor>` — <what it does> (what you do instead)
+
+## Scope
+
+## Mindset
+
+## Principles
+
+## Does NOT
+
+## Escalate
+
+- **<target agent or human maintainer>** — <the trigger condition>.
+```
+
+- `description` says _when to use it_ (that's how the orchestrator picks). For agents that
+  should fire automatically (reviewers, testers), start it with **"Use proactively …"**.
+- **Distinct from:** disambiguate against the 2–3 agents this one overlaps with — one line each, framed as "they do X; you do Y". This is the highest-leverage routing aid; keep it tight.
+- **Escalate** is a list of `target → trigger` pairs (bold target, then the condition), not prose — it encodes the handoff graph.
+- **`model`**: route heavy-reasoning / high-stakes agents to `opus` (architect, secrev) and the rest to `sonnet`; omit to inherit the session model.
+- Scope review-only agents (`devrev`, `qa`, `secrev`) to read-only tools (no `Edit`/`Write`).
+- Keep the body ≤ ~150 lines — a focused system prompt, not a manual.
+
+## Portable core vs. environment binding
+
+The agents are meant to be a **reusable base others can fork**, so keep two layers separate:
+
+- **Portable core (this whole config):** the agents, the skills, and the global `AGENTS.md`
+  rules/conventions/catalogs. Universal SDLC. **No repo names, registries, OS names, secret
+  names, or local paths** — say "the project's conventions" / "the matching skill" / "the
+  project's environment (`AGENTS.md`)" instead.
+- **Environment binding (per project / per machine):** which repos, registries, secrets, OS
+  rules, and local tooling. Lives in each repo's own `AGENTS.md` + `README.md` (and the
+  placeholder Owner Context in the global `AGENTS.md`). The global base ships clean; a fork
+  fills in its own specifics there and leaves the agents and skills untouched.
+
+When you catch yourself naming a tool, registry, or path in an agent or skill body, push it
+down into the project's `AGENTS.md` and reference it generically.
+
+## Editing global rules (`AGENTS.md`)
+
+- Add to **Hard Rules** only if it's universal and worth always-on cost.
+- Keep `AGENTS.md` ≤ ~200 lines / ~2k tokens. Push detail down into a skill and leave a
+  one-line pointer.
+
+## Context budget
+
+| File                            | Loaded               | Target                      |
+| ------------------------------- | -------------------- | --------------------------- |
+| `AGENTS.md` (global + project)  | every turn           | ≤ ~200 lines / ~2k tokens   |
+| skill / subagent `description:` | every turn (routing) | one line, ≤ ~25 words       |
+| skill body                      | on invoke            | ≤ ~500 lines (split beyond) |
+| subagent body                   | on spawn             | ≤ ~150 lines                |
+
+## Where machine / environment specifics go
+
+Tooling and local-desktop detail (local wrappers, container-runtime shims, host paths, OS
+quirks, publishing secrets) belongs in **each repo's own `AGENTS.md` / `README.md`**, never in
+the agents, the skills, or the global `AGENTS.md` base — those stay portable so a fork reuses
+them unchanged. Truly machine-local notes (a wrapper that only exists on your workstation) can
+go in a private file outside this shared config. When a skill or agent needs that context, it
+refers to "the project's environment (`AGENTS.md`)" generically rather than naming a tool.
+
+## Deployment (how it reaches each tool)
+
+The `ansible-ai-agents` role symlinks from `~/.config/agents/` (the clone of this repo):
+
+| Source      | → Destination                | Tool                 |
+| ----------- | ---------------------------- | -------------------- |
+| `AGENTS.md` | `~/.claude/CLAUDE.md`        | Claude Code (global) |
+| `skills/`   | `~/.claude/skills`           | Claude Code          |
+| `agents/`   | `~/.claude/agents`           | Claude Code          |
+| `AGENTS.md` | `~/.gemini/config/AGENTS.md` | AGY/Antigravity      |
+| `skills/`   | `~/.gemini/config/skills`    | AGY/Antigravity      |
+
+## Validate before commit
+
+```bash
+uvx pre-commit run --all-files   # gitleaks, detect-secrets, prettier
+```
+
+Prettier reformats markdown tables — let it, then re-stage. Never commit secrets or
+internal IPs (the hooks block them).
+
+## Portability
+
+Subagents are a Claude Code feature; other tools do not read `~/.claude/agents/`. The
+_content_ is portable — shared rules belong in `AGENTS.md`, which AGY reads too.

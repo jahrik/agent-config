@@ -1,0 +1,22 @@
+# Never commit secrets or local overrides
+*.env
+*.key
+*.pem
+*.secret
+*.token
+local/
+secrets/
+.secrets.baseline
+private/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Node
+node_modules/
