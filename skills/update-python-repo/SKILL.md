@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8.1.0
         with:
           python-version: "3.x"
       - run: uvx ruff check .
@@ -96,7 +96,7 @@ jobs:
     if: ${{ hashFiles('tests/**') != '' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v8.1.0
         with:
           python-version: "3.x"
       - run: uv run --with-requirements requirements.txt --with pytest pytest
@@ -142,6 +142,7 @@ If a job fails: `gh run view --log-failed $RUN | tail -60`, fix locally, push, w
 
 ## Notes
 
+- **`astral-sh/setup-uv` versioning** — the action no longer publishes moving major/minor tags; pin the full version (e.g. `@v8.1.0`), not `@v6`/`@v8`, or the step fails to resolve.
 - **Forks**: skip archived forks of other people's projects (`gh repo view <owner>/<repo> --json isFork`).
 - **Default branch**: some legacy repos still use `master` — set the CI `branches:` triggers to match the repo's actual default.
 - Add a `.gitignore` (`__pycache__/`, `*.pyc`, `venv/`) before `git add -A` — `py_compile` creates pycache that otherwise lands in the commit.
