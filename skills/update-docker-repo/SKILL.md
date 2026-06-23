@@ -1,4 +1,5 @@
 ---
+name: update-docker-repo
 description: Walk all docker-* repos alphabetically and modernize each one (GitHub Actions build, Dockerfile lint, README, AGENTS.md)
 ---
 
@@ -24,7 +25,7 @@ The reference repo for this pattern is `docker-archlinux-ansible` — its workfl
 
 ### 1. Understand the repo
 
-Read `Dockerfile`, `Makefile`, `docker-compose.yml`, `Jenkinsfile` (if present), and `README.md`. Figure out: what image it produces, the Docker Hub repo name (usually `jahrik/<repo-name>`), build args/flags it needs, and how to verify the image works (a command to run inside the container).
+Read `Dockerfile`, `Makefile`, `docker-compose.yml`, `Jenkinsfile` (if present), and `README.md`. Figure out: what image it produces, the published image name (GHCR by default — `ghcr.io/jahrik/<repo-name>`; `docker-archlinux-ansible` is the Docker Hub exception, see below), build args/flags it needs, and how to verify the image works (a command to run inside the container).
 
 ### 2. Fix the Dockerfile
 
@@ -39,11 +40,12 @@ podman run --rm -i docker.io/hadolint/hadolint < Dockerfile
 
 ### 3. Update the Makefile
 
-Standard shape (model: `docker-archlinux-ansible`):
+Standard shape (model: `docker-grafana`). Use the GHCR image name to match the
+release workflow below; for the `docker-archlinux-ansible` exception use `jahrik/<repo-name>`:
 
 ```makefile
 .EXPORT_ALL_VARIABLES:
-IMAGE = "jahrik/<repo-name>"
+IMAGE = "ghcr.io/jahrik/<repo-name>"
 TAG = latest
 
 all: build
@@ -125,7 +127,7 @@ jobs:
 
 ### 5. Update `README.md`
 
-Real content: what the image is, the Docker Hub pull command, how to build (`make build`), how to run it (compose or `docker run` example), and any required flags. No Jenkins references.
+Real content: what the image is, the GHCR pull command (`docker pull ghcr.io/jahrik/<repo-name>` — Docker Hub for the `docker-archlinux-ansible` exception), how to build (`make build`), how to run it (compose or `docker run` example), and any required flags. No Jenkins references.
 
 ### 6. Add `AGENTS.md`
 
@@ -143,7 +145,7 @@ Docker is not installed — the `docker` command is a Podman shim, so `make buil
 
 ```bash
 make build
-docker run --rm -it jahrik/<repo-name>:latest <verify-command>
+docker run --rm -it ghcr.io/jahrik/<repo-name>:latest <verify-command>
 ```
 
 Fix build failures before committing. Old repos often fail on dead package repo URLs in the Dockerfile — update them.

@@ -1,4 +1,5 @@
 ---
+name: update-python-repo
 description: Walk the Python project repos alphabetically and modernize each one (Python 3, ruff lint, CI, README, AGENTS.md)
 ---
 
@@ -77,11 +78,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.x"
-      - run: pipx run ruff check .
-      - run: python3 -m py_compile $(git ls-files '*.py')
+      - run: uvx ruff check .
+      - run: uv run python -m py_compile $(git ls-files '*.py')
 
   test:
     name: Test
@@ -89,11 +90,10 @@ jobs:
     if: ${{ hashFiles('tests/**') != '' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.x"
-      - run: pip install -r requirements.txt pytest
-      - run: pytest
+      - run: uv run --with-requirements requirements.txt --with pytest pytest
 ```
 
 Drop the `test` job entirely if the repo has no tests rather than shipping a job that never runs.

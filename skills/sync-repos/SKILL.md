@@ -1,4 +1,5 @@
 ---
+name: sync-repos
 description: Sync all GitHub repos — clone missing, pull main, clean up merged branches, report open PRs and unmerged work
 ---
 

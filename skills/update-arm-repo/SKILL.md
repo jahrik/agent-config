@@ -1,4 +1,5 @@
 ---
+name: update-arm-repo
 description: Walk all arm-* repos alphabetically and revive each one as a working multi-arch image build (single Dockerfile, GitHub Actions buildx, README, AGENTS.md)
 ---
 
@@ -101,12 +102,11 @@ jobs:
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image.
         uses: docker/build-push-action@v6
@@ -115,12 +115,12 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ${{ github.repository }}:latest
 ```
 
-- Add `permissions: contents: read` and `packages: write` at the job level (required for GITHUB_TOKEN to push to ghcr.io).
+- `arm-*` images publish to **Docker Hub** (`jahrik/<repo-name>`) — `${{ github.repository }}` with no registry prefix resolves to `docker.io/jahrik/<repo-name>`.
+- Configure `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets (`gh secret set`); they are required for the push to authenticate.
 - Adapt the verify step per image (daemons may need a sleep + `curl` health check instead of `exec`).
-- No secrets to configure — `GITHUB_TOKEN` is automatically available in every Actions run.
 - Delete the `Jenkinsfile` in the same PR.
 
 ### 5. Update `README.md`

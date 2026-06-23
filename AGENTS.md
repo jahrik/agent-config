@@ -54,8 +54,8 @@ AGENTS.md-aware agents — Claude Code (as `~/.claude/CLAUDE.md`) and AGY/Antigr
 
 - All repos live in `~/github/`
 - Ansible roles: `ansible-<name>`, tested with Molecule (Docker driver); published to Ansible Galaxy
-- Docker images: `docker-<name>`, multi-arch (`amd64`/`arm64`) via buildx; published to Docker Hub (`jahrik/<name>`)
-- ARM images: `arm-<name>`, multi-arch down to Raspberry Pi 3 (`arm/v7`); also Docker Hub
+- Docker images: `docker-<name>`, multi-arch (`amd64`/`arm64`) via buildx; published to GHCR (`ghcr.io/jahrik/<name>`) — `docker-archlinux-ansible` stays on Docker Hub
+- ARM images: `arm-<name>`, multi-arch down to Raspberry Pi 3 (`arm/v7`); published to Docker Hub (`jahrik/<name>`)
 - CI: GitHub Actions (not Jenkins/Jenkinsfile — those are legacy)
 - Use `AGENTS.md` not `CLAUDE.md` for project-level guidance files
 

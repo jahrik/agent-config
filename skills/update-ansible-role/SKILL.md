@@ -1,4 +1,5 @@
 ---
+name: update-ansible-role
 description: Walk all ansible-* repos alphabetically and apply the standard update pattern to each one that needs it. If run from inside a single role's repo, update only that role.
 ---
 
