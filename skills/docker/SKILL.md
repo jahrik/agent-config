@@ -1,9 +1,12 @@
 ---
 name: docker-skill
-description: Docker image conventions, Swarm deployment, and dswarm patterns for this homelab
+description: Docker image conventions — structure, multi-arch builds, linting, and Swarm deploy
 ---
 
 # Docker Skill
+
+Portable conventions for Docker image repos. The local runtime (Podman shim, dind Swarm,
+`dswarm` wrapper) lives in `AGENTS.md`, not here.
 
 ## Repo Structure
 
@@ -23,37 +26,24 @@ AGENTS.md
 ```bash
 make build    # docker build
 make push     # docker push
-make deploy   # dswarm stack deploy
+make deploy   # docker stack deploy
 make local    # docker-compose up (dev)
 ```
 
 ## Build Conventions
 
-- Build and test images as `local/<name>:test` — never use stale `jahrik/*` Hub tags
-- Support `amd64` and `arm64v8` where relevant (use buildx)
-- Lint Dockerfiles with `hadolint`
+- Build and test images with a local tag (e.g. `local/<name>:test`); don't rely on
+  previously-pushed registry tags.
+- Support `amd64` and `arm64` where relevant (use buildx).
+- Lint Dockerfiles with `hadolint`.
 
-## Swarm Deployment (dswarm)
-
-```bash
-dswarm stack deploy --resolve-image never -c docker-compose.yml <stack-name>
-dswarm service ls
-dswarm service logs <service>
-```
-
-**Always use `--resolve-image never`** — Docker Hub tags may be stale.
-
-If published ports don't respond, load `br_netfilter`:
+## Swarm Deployment
 
 ```bash
-sudo modprobe br_netfilter
+docker stack deploy --resolve-image never -c docker-compose.yml <stack-name>
 ```
 
-Test via internal overlay if ingress is unavailable:
-
-```bash
-dswarm exec <container> wget -qO- http://localhost:<port>
-```
+Use `--resolve-image never` so stale registry tags don't shadow locally-built images.
 
 ## ARM Images (`arm-*` repos)
 

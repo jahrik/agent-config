@@ -29,14 +29,54 @@ AGENTS.md-aware agents — Claude Code (as `~/.claude/CLAUDE.md`) and AGY/Antigr
 6. **Never commit or push to `main`.** Always branch, open a PR, and let the maintainer
    merge — never `git push` to main and never auto-merge a PR.
 7. **Attribute commits** with a `Co-Authored-By:` trailer for the AI model used.
+8. **On SteamOS (Steam Deck):** detect with `ansible_distribution_release == 'holo'` (not
+   `== 'SteamOS'`); never run `steamos-readonly disable` or touch read-only protection
+   (install under `$HOME`, no `become`); never `exec` a shell from `.bashrc`.
 
 ---
 
-## Tooling & Environment
+## Local Environment & Tooling
 
-- **Python:** `uv` for dependencies and virtualenvs (`uv run`, `uv sync`); per-project `.venv/`.
+The maintainer's workstation. **A fork should replace this whole section** — the skills and
+agents stay portable; this is the only place machine-specific detail belongs.
+
+- **OS:** Arch Linux / SteamOS (Steam Deck). Detect SteamOS via `ansible_distribution_release == 'holo'`.
+- **Python:** `uv` for deps and virtualenvs (`uv run`, `uv sync`); per-project `.venv/`.
 - **Packages:** `yay` (AUR helper) on Arch; Node via `npm` global installs under `~/.local/`.
-- **Ansible/Molecule, Docker Swarm (dswarm), Podman, the local test harness, and all SteamOS specifics:** see the `steamdeck` skill.
+- **Containers:** Podman with a Docker shim at `~/.local/bin/docker` (no Docker daemon).
+  Socket: `DOCKER_HOST=unix:///run/user/1000/podman/podman.sock`.
+- **Wrappers:** `mtest` (Molecule with the right `DOCKER_HOST`/PATH) and `dswarm` (docker CLI
+  against the dind Swarm). Local-only — keep them out of committed repo docs; READMEs use plain
+  `molecule` / `docker`.
+
+### Local Molecule testing
+
+`ansible-core` is pinned to `2.16.*` (venv `~/.venv/ansible`) for `molecule-docker`
+compatibility — 2.17+ breaks its boolean conditionals. Run `mtest test` (`converge` /
+`verify` / `destroy` also work). If galaxy role install fails with "doesn't appear to contain
+a role": `rm -rf ~/.ansible/roles/jahrik.*` and reinstall.
+
+### Local Docker Swarm (dind)
+
+Podman can't do Swarm, so a real Swarm runs in a `docker:dind` container named `dind`
+(fuse-overlayfs, `DOCKER_IGNORE_BR_NETFILTER_ERROR=1`, daemon.json at `~/.config/dind/daemon.json`).
+`dswarm` → a static docker CLI at `tcp://127.0.0.1:2375`. Build/test images as `local/<name>:test`
+and deploy with `--resolve-image never` so stale Hub tags don't shadow local builds. Ingress
+needs `sudo modprobe br_netfilter`; without it, test via `dswarm exec <c> wget ...`. Overlay nets
+pre-created: `monitor`, `elk`. Run `podman start dind` after reboot.
+
+### Ansible Galaxy key
+
+Each role has its own `GALAXY_API_KEY` secret (token at `galaxy.ansible.com/ui/token/`).
+Bulk-update across roles:
+
+```bash
+NEW_KEY="your_token_here"
+for repo in ansible-alacritty ansible-arch-workstation ansible-conky ansible-hyprland \
+            ansible-nvim ansible-vim ansible-zsh ansilbe-yay; do
+  gh secret set GALAXY_API_KEY --repo jahrik/$repo --body "$NEW_KEY"
+done
+```
 
 ---
 
@@ -65,11 +105,10 @@ AGENTS.md-aware agents — Claude Code (as `~/.claude/CLAUDE.md`) and AGY/Antigr
 
 Additional context is available in modular skill files. These are loaded on demand:
 
-Reference skills (conventions and context):
+Reference skills (portable conventions, no machine specifics):
 
 - `skills/ansible/` — Ansible role conventions and patterns
-- `skills/docker/` — Docker/Swarm conventions
-- `skills/steamdeck/` — Steam Deck / SteamOS environment, wrappers, and on-device rules
+- `skills/docker/` — Docker image and Swarm conventions
 - `skills/python/` — Python project conventions
 
 Workflow skills (repo maintenance actions):
@@ -87,8 +126,8 @@ Workflow skills (repo maintenance actions):
 
 Subagent personas live in `agents/` and are deployed to `~/.claude/agents/` by the
 `ansible-ai-agents` role. They follow a simplified SDLC: plan → implement → review →
-test → secure → release. Environment-specific detail lives in the skills above (notably
-`steamdeck`), not in the agent definitions.
+test → secure → release. Environment-specific detail lives in the Local Environment section
+above, not in the agent definitions or the portable skills.
 
 | Agent       | Use for                                    |
 | ----------- | ------------------------------------------ |
@@ -109,4 +148,5 @@ Agents are a Claude Code feature; see `agents/README.md` for portability notes.
 
 - Secrets, tokens, API keys
 - Internal IPs or hostnames (use `{{ variables }}`)
-- Anything longer than needed — keep it lean so agents don't ignore it
+- Keep the portable sections lean; machine-specific detail belongs only in the Local
+  Environment section, and never leaks into the skills or committed per-repo docs

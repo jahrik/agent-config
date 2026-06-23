@@ -1,9 +1,12 @@
 ---
 name: ansible-skill
-description: Ansible role conventions, molecule testing, and patterns for this homelab
+description: Ansible role conventions — structure, FQCN, Molecule testing, and CI patterns
 ---
 
 # Ansible Skill
+
+Portable conventions for Ansible role repos. The local test harness and any publishing
+secrets live in `AGENTS.md`, not here.
 
 ## Role Structure
 
@@ -33,30 +36,14 @@ README.md
 
 ## Testing with Molecule
 
-Run locally with the `mtest` wrapper:
-
-```bash
-mtest converge    # apply the role
-mtest verify      # run assertions
-mtest destroy     # tear down containers
-mtest test        # full cycle
-```
-
-Environment required:
-
-```bash
-DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
-PATH="$HOME/.local/bin:$HOME/.venv/ansible/bin:$PATH"
-```
+- Each role ships a `molecule/default/` scenario (Docker driver).
+- Run `molecule test` (converge → verify → destroy). `verify.yml` must make real assertions,
+  not `assert that=true`.
+- Tests must be idempotent — a second converge reports no changes.
 
 ## CI Pattern (GitHub Actions)
 
-All roles use `.github/workflows/cicd.yml` with `lint` → `molecule` → `release` jobs.
-Lint and test run via `uv` (`astral-sh/setup-uv`, then `uv sync` and `uv run molecule test`) —
-not the legacy `gofrolist/molecule-action`. See the `update-ansible-role` skill for the full
-template.
-
-## Galaxy Publishing
-
-Each role has its own `GALAXY_API_KEY` secret. The `release` job publishes to Galaxy via
-`robertdebock/galaxy-action` on pushes to `main` (gated on `lint` + `molecule` passing).
+`.github/workflows/cicd.yml` with `lint` → `molecule` → `release` jobs. Run lint and tests
+via `uv` (`astral-sh/setup-uv`, then `uv sync` and `uv run molecule test`). The `release` job
+publishes to Galaxy on pushes to `main`, gated on `lint` + `molecule` passing. See the
+`update-ansible-role` skill for the full template.

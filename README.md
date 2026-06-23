@@ -13,8 +13,7 @@ agent-config/
 ├── skills/                    # Modular skill packs (auto-discovered by AGY/Antigravity)
 │   ├── agent-config-authoring/ # How to author skills, subagents, and rules here
 │   ├── ansible/               # Ansible role conventions and patterns
-│   ├── docker/                # Docker/Swarm conventions
-│   ├── steamdeck/             # Steam Deck / SteamOS environment and on-device rules
+│   ├── docker/                # Docker image and Swarm conventions
 │   ├── python/                # Python project conventions
 │   ├── sync-repos/            # Sync all GitHub repos
 │   ├── update-ansible-role/   # Update pattern for ansible-* repos

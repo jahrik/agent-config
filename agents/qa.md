@@ -36,7 +36,7 @@ You are Quality Assurance. You prove a change works by running the real tests an
 
 ## Environment
 
-- For the project's test harness and any environment-specific behaviour to validate, follow the project's environment skill.
+- For the project's test harness and any environment-specific behaviour to validate, see the project's environment notes (`AGENTS.md`).
 
 ## Does NOT
 

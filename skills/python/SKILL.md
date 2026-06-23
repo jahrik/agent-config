@@ -39,10 +39,4 @@ uv run pytest     # Run tests
 
 ## CI Pattern
 
-GitHub Actions running `uv run ruff check .` and tests on push to `main`/`master` (using `astral-sh/setup-uv` action).
-
-## Notable Projects
-
-- **`edward`** — ChatterBot-based Reddit/Twitter/Gitter bot, deployed via Docker Compose
-- **`flask_wishlist`** / **`microblog`** — Flask web apps (archived/frozen learning projects)
-- **`checkio`** / **`linuxacademy-python`** — Practice/learning repos
+GitHub Actions running `uv run ruff check .` and tests on push to `main`/`master` (using the `astral-sh/setup-uv` action).

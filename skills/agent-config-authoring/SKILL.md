@@ -92,10 +92,11 @@ The agents are meant to be a **reusable base others can fork**, so keep two laye
 - **Portable core (the agent body):** persona, mindset, does-not, escalation graph,
   distinct-from. Universal SDLC. **No repo names, registries, OS names, secret names, or
   skill names** — say "the project's conventions" / "the matching skill" / "the project's
-  environment skill" instead.
-- **Environment binding (this config's specifics):** which repos, registries, secrets, and
-  OS rules. Lives in `AGENTS.md` (Owner Context / Repository Conventions) and in skills
-  (notably the environment skill). A forker overrides those and leaves the agents untouched.
+  environment (`AGENTS.md`)" instead.
+- **Environment binding (this config's specifics):** which repos, registries, secrets, OS
+  rules, and local tooling. Lives in `AGENTS.md` (Owner Context, Repository Conventions, and
+  the Local Environment & Tooling section). A forker overrides those and leaves the agents
+  and the portable skills untouched.
 
 When you catch yourself naming a tool, registry, or path in an agent body, push it down into
 a skill or `AGENTS.md` and reference it generically.
@@ -115,11 +116,14 @@ a skill or `AGENTS.md` and reference it generically.
 | skill body                      | on invoke            | ≤ ~500 lines (split beyond) |
 | subagent body                   | on spawn             | ≤ ~150 lines                |
 
-## Where SteamOS / Deck specifics go
+## Where machine / environment specifics go
 
-Environment- and device-specific detail (mtest, dswarm, Podman, `holo` rules, dind swarm,
-Galaxy key) lives in the **`steamdeck` skill** — never duplicated in `AGENTS.md` or in
-subagent bodies. Agents reference the skill instead.
+Tooling and local-desktop detail (wrappers like `mtest`/`dswarm`, Podman shim, `holo` rules,
+dind Swarm, the Galaxy key) lives **only in the `AGENTS.md` "Local Environment & Tooling"
+section** — the one private, machine-specific part of the config. Keep it out of the skills
+and the subagent bodies: those are the portable base a fork reuses unchanged. A forker
+replaces just the Local Environment section. When a skill or agent needs that context, it
+refers to "the project's environment" / `AGENTS.md` generically rather than naming a tool.
 
 ## Deployment (how it reaches each tool)
 
