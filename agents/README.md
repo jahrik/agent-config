@@ -27,9 +27,7 @@ release**, plus a domain expert and a docs role.
 
 ## Portability
 
-Subagents are a Claude Code feature — other tools do not read `~/.claude/agents/`. The
-_content_ (scope / mindset / guardrails) is portable, and the shared rules also live in
-the top-level `AGENTS.md`, which other AGENTS.md-aware tools read via their own symlinks.
+Subagents are a Claude Code feature — other tools do not natively auto-discover `~/.claude/agents/`. The _content_ (scope / mindset / guardrails) is highly portable. For AGY/Antigravity, the `load-sdlc-agents` skill dynamically reads these files and injects them into the runtime via `define_subagent`. The shared rules also live in the top-level `AGENTS.md`, which other AGENTS.md-aware tools read via their own symlinks.
 To use a role with a different tool, reference the same guidance through that tool's
 instruction file.
 
