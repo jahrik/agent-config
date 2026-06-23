@@ -5,8 +5,8 @@ description: Docker image conventions — structure, multi-arch builds, linting,
 
 # Docker Skill
 
-Portable conventions for Docker image repos. The local runtime (Podman shim, dind Swarm,
-`dswarm` wrapper) lives in `AGENTS.md`, not here.
+Portable conventions for Docker image repos. Local runtime specifics (container shims, Swarm
+wrappers) live in the project's `AGENTS.md`, not here.
 
 ## Repo Structure
 

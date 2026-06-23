@@ -89,17 +89,17 @@ You are <role>. <One-line charter.>
 
 The agents are meant to be a **reusable base others can fork**, so keep two layers separate:
 
-- **Portable core (the agent body):** persona, mindset, does-not, escalation graph,
-  distinct-from. Universal SDLC. **No repo names, registries, OS names, secret names, or
-  skill names** — say "the project's conventions" / "the matching skill" / "the project's
-  environment (`AGENTS.md`)" instead.
-- **Environment binding (this config's specifics):** which repos, registries, secrets, OS
-  rules, and local tooling. Lives in `AGENTS.md` (Owner Context, Repository Conventions, and
-  the Local Environment & Tooling section). A forker overrides those and leaves the agents
-  and the portable skills untouched.
+- **Portable core (this whole config):** the agents, the skills, and the global `AGENTS.md`
+  rules/conventions/catalogs. Universal SDLC. **No repo names, registries, OS names, secret
+  names, or local paths** — say "the project's conventions" / "the matching skill" / "the
+  project's environment (`AGENTS.md`)" instead.
+- **Environment binding (per project / per machine):** which repos, registries, secrets, OS
+  rules, and local tooling. Lives in each repo's own `AGENTS.md` + `README.md` (and the
+  placeholder Owner Context in the global `AGENTS.md`). The global base ships clean; a fork
+  fills in its own specifics there and leaves the agents and skills untouched.
 
-When you catch yourself naming a tool, registry, or path in an agent body, push it down into
-a skill or `AGENTS.md` and reference it generically.
+When you catch yourself naming a tool, registry, or path in an agent or skill body, push it
+down into the project's `AGENTS.md` and reference it generically.
 
 ## Editing global rules (`AGENTS.md`)
 
@@ -118,12 +118,12 @@ a skill or `AGENTS.md` and reference it generically.
 
 ## Where machine / environment specifics go
 
-Tooling and local-desktop detail (wrappers like `mtest`/`dswarm`, Podman shim, `holo` rules,
-dind Swarm, the Galaxy key) lives **only in the `AGENTS.md` "Local Environment & Tooling"
-section** — the one private, machine-specific part of the config. Keep it out of the skills
-and the subagent bodies: those are the portable base a fork reuses unchanged. A forker
-replaces just the Local Environment section. When a skill or agent needs that context, it
-refers to "the project's environment" / `AGENTS.md` generically rather than naming a tool.
+Tooling and local-desktop detail (local wrappers, container-runtime shims, host paths, OS
+quirks, publishing secrets) belongs in **each repo's own `AGENTS.md` / `README.md`**, never in
+the agents, the skills, or the global `AGENTS.md` base — those stay portable so a fork reuses
+them unchanged. Truly machine-local notes (a wrapper that only exists on your workstation) can
+go in a private file outside this shared config. When a skill or agent needs that context, it
+refers to "the project's environment (`AGENTS.md`)" generically rather than naming a tool.
 
 ## Deployment (how it reaches each tool)
 

@@ -2,7 +2,7 @@
 
 [![Lint](https://github.com/jahrik/agent-config/actions/workflows/lint.yml/badge.svg)](https://github.com/jahrik/agent-config/actions/workflows/lint.yml)
 
-Personal AI agent configuration — plug-and-play with [ansible-ai-agents](https://github.com/jahrik/ansible-ai-agents).
+A portable AI agent configuration base — rules, skills, and SDLC subagents — plug-and-play with [ansible-ai-agents](https://github.com/jahrik/ansible-ai-agents).
 
 ## Structure
 
