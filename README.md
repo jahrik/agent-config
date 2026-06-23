@@ -14,6 +14,7 @@ agent-config/
 │   ├── agent-config-authoring/ # How to author subagents and global rules
 │   ├── skill-creator/         # How to author a skill
 │   ├── github-workflow/       # Branch → commit → PR → review → merge flow
+│   ├── load-sdlc-agents/      # Load SDLC personas into Antigravity
 │   ├── systematic-debugging/  # Disciplined root-cause debugging
 │   ├── ansible/               # Ansible role conventions and patterns
 │   ├── docker/                # Docker image and Swarm conventions
@@ -31,7 +32,7 @@ agent-config/
 
 ## What's inside
 
-**Agents** (`agents/`) — a simplified SDLC team, deployed to `~/.claude/agents/`:
+**Agents** (`agents/`) — a simplified SDLC team, deployed to `~/.claude/agents/` (and loadable into AGY/Antigravity via the `load-sdlc-agents` skill):
 `architect` (plan) · `devlead` / `infraeng` (implement) · `devrev` / `qa` / `secrev`
 (review / test / secure) · `releng` (release) · `infoarch` (docs). Each is a portable persona
 with no project-specific tooling baked in.
@@ -39,7 +40,7 @@ with no project-specific tooling baked in.
 **Skills** (`skills/`) — loaded on demand when their `description` matches:
 
 - **Reference:** `ansible`, `docker`, `python` — conventions per repo type
-- **Practice:** `github-workflow`, `systematic-debugging` — how to work
+- **Practice:** `github-workflow`, `load-sdlc-agents`, `systematic-debugging` — how to work
 - **Authoring:** `agent-config-authoring`, `skill-creator` — extend this config
 - **Workflow:** `sync-repos`, `update-ansible-role`, `update-arm-repo`, `update-docker-repo`, `update-python-repo` — repo maintenance
 

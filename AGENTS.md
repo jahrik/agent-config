@@ -62,6 +62,7 @@ Reference skills (portable conventions):
 Practice skills (how to work):
 
 - `skills/github-workflow/` — branch → commit → PR → review → merge flow
+- `skills/load-sdlc-agents/` — load SDLC personas into Antigravity
 - `skills/systematic-debugging/` — disciplined root-cause debugging
 
 Authoring skills (extend this config):
@@ -96,7 +97,7 @@ environment-specific detail lives in each repo's `AGENTS.md`, not in the agent d
 | `releng`    | Versioning, CI/CD, publishing              |
 | `infoarch`  | Documentation                              |
 
-Agents are a Claude Code feature; see `agents/README.md` for portability notes.
+These personas are natively discovered by Claude Code, but can also be loaded into AGY/Antigravity using the `load-sdlc-agents` skill. See `agents/README.md` for portability notes.
 
 ---
 
