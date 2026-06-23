@@ -5,19 +5,9 @@ automatically by AGENTS.md-aware agents — Claude Code (as `~/.claude/CLAUDE.md
 (as `~/.gemini/config/AGENTS.md`), wired up by the `ansible-ai-agents` role.
 
 This is a **portable base**. Keep it free of machine- and account-specific detail: per-repo
-specifics live in each repository's own `AGENTS.md` and `README.md` (read those first), and the few
-placeholders below are for you to fill in.
-
----
-
-## Owner Context
-
-Fill in for your setup, or leave as-is — agents infer most of it from the repos:
-
-- **GitHub:** `<your-handle-or-org>`
-- **Primary OS / Shell / Editor:** `<os>` / `<shell>` / `<editor>`
-- **Local tooling:** note any non-obvious local wrappers or runtimes here (or keep them in a private
-  file outside this shared base). Each repo's `AGENTS.md` documents how to test and run that repo.
+specifics live in each repository's own `AGENTS.md` and `README.md` (read those first), and
+environment details (account, OS, shell, local tooling) are inferred from the session and the repos
+as needed.
 
 ---
 
