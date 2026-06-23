@@ -67,9 +67,18 @@ Reference skills (portable conventions):
 - `skills/docker/` — Docker image and Swarm conventions
 - `skills/python/` — Python project conventions
 
+Practice skills (how to work):
+
+- `skills/github-workflow/` — branch → commit → PR → review → merge flow
+- `skills/systematic-debugging/` — disciplined root-cause debugging
+
+Authoring skills (extend this config):
+
+- `skills/agent-config-authoring/` — how to author subagents and global rules
+- `skills/skill-creator/` — how to author a skill
+
 Workflow skills (repo maintenance actions):
 
-- `skills/agent-config-authoring/` — how to author skills, subagents, and rules in this repo
 - `skills/sync-repos/` — sync all GitHub repos
 - `skills/update-ansible-role/` — update pattern for `ansible-*` repos
 - `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds

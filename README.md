@@ -11,7 +11,10 @@ agent-config/
 ├── AGENTS.md                  # Global rules loaded by all agents (Claude Code, AGY/Antigravity)
 ├── agents/                    # Subagent personas → ~/.claude/agents/ (plan, review, qa, secrev, ...)
 ├── skills/                    # Modular skill packs (auto-discovered by AGY/Antigravity)
-│   ├── agent-config-authoring/ # How to author skills, subagents, and rules here
+│   ├── agent-config-authoring/ # How to author subagents and global rules
+│   ├── skill-creator/         # How to author a skill
+│   ├── github-workflow/       # Branch → commit → PR → review → merge flow
+│   ├── systematic-debugging/  # Disciplined root-cause debugging
 │   ├── ansible/               # Ansible role conventions and patterns
 │   ├── docker/                # Docker image and Swarm conventions
 │   ├── python/                # Python project conventions

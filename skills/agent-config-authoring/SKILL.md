@@ -1,12 +1,13 @@
 ---
 name: agent-config-authoring
-description: Conventions and steps for authoring skills, subagents, and rules in the agent-config repo — formats, context budget, where things live, plus deploy and validation. Use when creating or editing a skill, subagent, or global rule.
+description: Conventions and steps for authoring subagents and global rules in the agent-config repo — formats, context budget, the portable-vs-environment split, deploy, and validation. Use when creating or editing a subagent or a global rule. (For skills, see skill-creator.)
 ---
 
 # Agent-Config Authoring
 
-How to add or edit the three customization layers in this repo. `agent-config` is the
-**single source of truth**; the `ansible-ai-agents` role symlinks it into each tool.
+How to add or edit **subagents** and **global rules** in this repo. For authoring **skills**, see
+the `skill-creator` skill. `agent-config` is the **single source of truth**; the `ansible-ai-agents`
+role symlinks it into each tool.
 
 ## Repo layout
 
@@ -22,29 +23,9 @@ agent-config/
 - **Global rule** → `AGENTS.md`. A short, universal directive that should apply to _every_
   session (e.g. "never push to main"). Always loaded — add sparingly.
 - **Skill** → `skills/<name>/SKILL.md`. Reference knowledge or a repeatable procedure,
-  loaded **on demand** when its `description` matches. Can be long.
+  loaded **on demand** when its `description` matches. Authored per the `skill-creator` skill.
 - **Subagent** → `agents/<name>.md`. A persona with a defined stance and tool scope,
   spawned for a task. Claude Code only.
-
-## Authoring a skill
-
-Create `skills/<slug>/SKILL.md`:
-
-```markdown
----
-name: <slug>
-description: <one line — what it is and WHEN to use it; this is the routing trigger>
----
-
-# <Title>
-
-## <Sections with the actual content>
-```
-
-- `name` matches the directory slug.
-- `description` is the **only part always in context** — make it a tight trigger
-  (≤ ~25 words), front-loaded with the keywords that should activate it.
-- Keep the body ≤ ~500 lines; split overflow into sibling files the skill links to.
 
 ## Authoring a subagent
 
