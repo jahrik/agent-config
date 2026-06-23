@@ -59,6 +59,10 @@ tools: Read, Grep, Glob, Bash # omit to inherit all; scope reviewers read-only
 
 You are <role>. <One-line charter.>
 
+**Distinct from:**
+
+- `<neighbor>` — <what it does> (what you do instead)
+
 ## Scope
 
 ## Mindset
@@ -68,9 +72,13 @@ You are <role>. <One-line charter.>
 ## Does NOT
 
 ## Escalate
+
+- **<target agent or human maintainer>** — <the trigger condition>.
 ```
 
 - `description` says _when to use it_ (that's how the orchestrator picks).
+- **Distinct from:** disambiguate against the 2–3 agents this one overlaps with — one line each, framed as "they do X; you do Y". This is the highest-leverage routing aid; keep it tight.
+- **Escalate** is a list of `target → trigger` pairs (bold target, then the condition), not prose — it encodes the handoff graph.
 - Scope review-only agents (`devrev`, `qa`, `secrev`) to read-only tools (no `Edit`/`Write`).
 - Keep the body ≤ ~150 lines — a focused system prompt, not a manual.
 
