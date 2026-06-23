@@ -9,8 +9,8 @@ A portable AI agent configuration base — rules, skills, and SDLC subagents —
 ```
 agent-config/
 ├── AGENTS.md                  # Global rules loaded by all agents (Claude Code, AGY/Antigravity)
-├── agents/                    # Subagent personas → ~/.claude/agents/ (plan, review, qa, secrev, ...)
-├── skills/                    # Modular skill packs (auto-discovered by AGY/Antigravity)
+├── agents/                    # 8 SDLC subagent personas → ~/.claude/agents/
+├── skills/                    # Modular skill packs, loaded on demand by description
 │   ├── agent-config-authoring/ # How to author subagents and global rules
 │   ├── skill-creator/         # How to author a skill
 │   ├── github-workflow/       # Branch → commit → PR → review → merge flow
@@ -26,6 +26,23 @@ agent-config/
 ├── SECURITY.md                # What may/may not be committed here
 └── .pre-commit-config.yaml    # Secret scanning + formatting on every commit
 ```
+
+## What's inside
+
+**Agents** (`agents/`) — a simplified SDLC team, deployed to `~/.claude/agents/`:
+`architect` (plan) · `devlead` / `infraeng` (implement) · `devrev` / `qa` / `secrev`
+(review / test / secure) · `releng` (release) · `infoarch` (docs). Each is a portable persona
+with no project-specific tooling baked in.
+
+**Skills** (`skills/`) — loaded on demand when their `description` matches:
+
+- **Reference:** `ansible`, `docker`, `python` — conventions per repo type
+- **Practice:** `github-workflow`, `systematic-debugging` — how to work
+- **Authoring:** `agent-config-authoring`, `skill-creator` — extend this config
+- **Workflow:** `sync-repos`, `update-ansible-role`, `update-arm-repo`, `update-docker-repo`, `update-python-repo` — repo maintenance
+
+**Rules** (`AGENTS.md`) — always-loaded global rules and conventions. It's a **portable base**:
+machine- and account-specific detail belongs in each repo's own `AGENTS.md`, not here.
 
 ## Using with ansible-ai-agents
 
@@ -44,14 +61,19 @@ and symlinks it into the locations each agent tool expects. Override the repo in
 
 ```bash
 git clone https://github.com/jahrik/agent-config ~/.config/agents
-ln -s ~/.config/agents/AGENTS.md ~/.agents/AGENTS.md
-ln -s ~/.config/agents/skills ~/.agents/skills
+# Claude Code
+ln -s ~/.config/agents/AGENTS.md ~/.claude/CLAUDE.md
+ln -s ~/.config/agents/skills    ~/.claude/skills
+ln -s ~/.config/agents/agents    ~/.claude/agents
+# AGY/Antigravity
+ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
+ln -s ~/.config/agents/skills    ~/.gemini/config/skills
 ```
 
 ## Security
 
 - **Never commit secrets, tokens, API keys, or internal IPs** to this repo.
-- Use Ansible Vault or environment variables for sensitive values.
+- Use a secrets manager or environment variables for sensitive values.
 - Pre-commit hooks (gitleaks + detect-secrets) enforce this on every commit.
 - GitHub secret scanning is enabled on this public repo.
 
