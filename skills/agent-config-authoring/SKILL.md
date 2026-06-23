@@ -55,6 +55,7 @@ Create `agents/<slug>.md`:
 name: <slug>
 description: Use to <when to dispatch this agent — used for routing>
 tools: Read, Grep, Glob, Bash # omit to inherit all; scope reviewers read-only
+model: sonnet # opus for heavy reasoning (architect, secrev); omit to inherit
 ---
 
 You are <role>. <One-line charter.>
@@ -76,11 +77,28 @@ You are <role>. <One-line charter.>
 - **<target agent or human maintainer>** — <the trigger condition>.
 ```
 
-- `description` says _when to use it_ (that's how the orchestrator picks).
+- `description` says _when to use it_ (that's how the orchestrator picks). For agents that
+  should fire automatically (reviewers, testers), start it with **"Use proactively …"**.
 - **Distinct from:** disambiguate against the 2–3 agents this one overlaps with — one line each, framed as "they do X; you do Y". This is the highest-leverage routing aid; keep it tight.
 - **Escalate** is a list of `target → trigger` pairs (bold target, then the condition), not prose — it encodes the handoff graph.
+- **`model`**: route heavy-reasoning / high-stakes agents to `opus` (architect, secrev) and the rest to `sonnet`; omit to inherit the session model.
 - Scope review-only agents (`devrev`, `qa`, `secrev`) to read-only tools (no `Edit`/`Write`).
 - Keep the body ≤ ~150 lines — a focused system prompt, not a manual.
+
+## Portable core vs. environment binding
+
+The agents are meant to be a **reusable base others can fork**, so keep two layers separate:
+
+- **Portable core (the agent body):** persona, mindset, does-not, escalation graph,
+  distinct-from. Universal SDLC. **No repo names, registries, OS names, secret names, or
+  skill names** — say "the project's conventions" / "the matching skill" / "the project's
+  environment skill" instead.
+- **Environment binding (this config's specifics):** which repos, registries, secrets, and
+  OS rules. Lives in `AGENTS.md` (Owner Context / Repository Conventions) and in skills
+  (notably the environment skill). A forker overrides those and leaves the agents untouched.
+
+When you catch yourself naming a tool, registry, or path in an agent body, push it down into
+a skill or `AGENTS.md` and reference it generically.
 
 ## Editing global rules (`AGENTS.md`)
 
