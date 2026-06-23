@@ -37,4 +37,6 @@ instruction file.
 
 - `name` matches the filename slug.
 - `description` says _when_ to use the agent (used for routing).
-- Reviewer-type agents (`devrev`, `qa`, `secrev`) are scoped to read-only tools.
+- Reviewer-type agents (`devrev`, `qa`, `secrev`) drop `Edit`/`Write` — they report findings rather
+  than change code. They keep `Bash` for inspection (grep, running tests, `gh`), so "read-only" means
+  no file edits, not a sandbox; the persona body is what keeps them from mutating state.

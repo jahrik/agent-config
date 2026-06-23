@@ -1,6 +1,6 @@
 ---
-name: python-skill
-description: Python project conventions, modern tooling with uv, ruff linting, and CI patterns
+name: python
+description: Python project conventions — uv tooling, ruff lint/format, pyproject layout, and CI. Use when writing or updating a Python project, its dependencies, or its lint/CI setup.
 ---
 
 # Python Skill

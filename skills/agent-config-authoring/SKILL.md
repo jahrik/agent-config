@@ -121,11 +121,13 @@ The `ansible-ai-agents` role symlinks from `~/.config/agents/` (the clone of thi
 ## Validate before commit
 
 ```bash
-uvx pre-commit run --all-files   # gitleaks, detect-secrets, prettier
+uvx pre-commit run --all-files   # gitleaks, detect-secrets, prettier, lint-config
 ```
 
 Prettier reformats markdown tables — let it, then re-stage. Never commit secrets or
-internal IPs (the hooks block them).
+internal IPs (the hooks block them). The `lint-config` hook (`scripts/lint-config.py`)
+fails the commit if an agent's frontmatter `name` doesn't match its filename or the agent
+isn't registered in `AGENTS.md` and `agents/README.md` — register it in both before committing.
 
 ## Portability
 

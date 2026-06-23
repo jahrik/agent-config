@@ -1,5 +1,5 @@
 ---
-name: ansible-skill
+name: ansible
 description: Ansible role conventions for this ecosystem — multi-OS role anatomy, the install/uninstall + per-OS dispatch pattern, Molecule scenarios, meta/CI/lint shapes, and production-profile rules. Use when writing or updating an Ansible role.
 ---
 

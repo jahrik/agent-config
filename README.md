@@ -23,8 +23,10 @@ agent-config/
 │   ├── update-arm-repo/       # Revive arm-* multi-arch image builds
 │   ├── update-docker-repo/    # Modernize docker-* image repos
 │   └── update-python-repo/    # Modernize Python project repos
+├── scripts/
+│   └── lint-config.py         # Consistency checks (name↔dir, catalog registration)
 ├── SECURITY.md                # What may/may not be committed here
-└── .pre-commit-config.yaml    # Secret scanning + formatting on every commit
+└── .pre-commit-config.yaml    # Secret scanning + formatting + config lint on every commit
 ```
 
 ## What's inside

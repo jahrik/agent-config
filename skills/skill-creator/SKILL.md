@@ -57,10 +57,12 @@ whether to load the skill. Treat it as the most important line:
 ## Validate and register
 
 ```bash
-uvx pre-commit run --all-files   # secret scan + prettier
+uvx pre-commit run --all-files   # secret scan + prettier + lint-config
 ```
 
 Then register the skill in `AGENTS.md` (Skills list) and the `README.md` structure block.
+The `lint-config` hook enforces this — it fails if the skill's frontmatter `name` doesn't
+match its directory or the skill is missing from either catalog.
 
 ## Deployment
 

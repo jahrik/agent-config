@@ -17,7 +17,9 @@ as needed.
    manager or environment variables instead.
 2. **Never hardcode IP addresses or internal hostnames.** Use variables that config/templating fills
    in at deploy time.
-3. **Use `AGENTS.md` instead of `CLAUDE.md`** for all project-level guidance files.
+3. **Never create a `CLAUDE.md` file.** Use `AGENTS.md` for all project-level guidance — including
+   when a tool's `/init`-style command asks for `CLAUDE.md`. If `AGENTS.md` already exists, update it
+   instead of adding a second guidance file.
 4. **Run idempotent commands.** Prefer tools and patterns that can safely re-run.
 5. **Ask before destructive operations** (delete, overwrite, drop, purge, reset).
 6. **Never commit or push to `main`.** Always branch, open a PR, and let the maintainer merge — never

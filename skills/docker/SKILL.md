@@ -1,6 +1,6 @@
 ---
-name: docker-skill
-description: Docker image conventions — structure, multi-arch builds, linting, and Swarm deploy
+name: docker
+description: Docker image conventions — structure, multi-arch buildx builds, hadolint, and Swarm deploy. Use when writing or updating a Dockerfile, image build, or compose/stack file.
 ---
 
 # Docker Skill

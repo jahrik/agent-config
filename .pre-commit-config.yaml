@@ -27,3 +27,12 @@ repos:
     hooks:
       - id: prettier
         types_or: [markdown, yaml, json]
+
+  - repo: local
+    hooks:
+      - id: lint-config
+        name: lint agent-config consistency
+        entry: python3 scripts/lint-config.py
+        language: system
+        pass_filenames: false
+        files: ^(skills/|agents/|AGENTS\.md|README\.md|scripts/lint-config\.py)
