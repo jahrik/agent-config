@@ -178,111 +178,25 @@ Scan all `tasks/` files for these known bugs:
 
 ### L. Lint configs + pyproject — `releng`
 
-`.yamllint` (the `.venv/` ignore is required so yamllint skips the virtualenv):
+Copy each from a conforming role; the non-obvious bits:
 
-```yaml
----
-extends: default
-ignore: |
-  .venv/
-rules:
-  comments-indentation: disable
-  document-start: disable
-  indentation: disable
-  line-length: disable
-  truthy: disable
-  octal-values:
-    forbid-implicit-octal: true
-    forbid-explicit-octal: true
-```
-
-`.ansible-lint`:
-
-```yaml
----
-profile: production
-exclude_paths:
-  - .cache/
-  - molecule/
-  - .ansible/
-  - tests/
-```
-
-`.pre-commit-config.yaml` — the standard hook set: gitleaks, detect-secrets, pre-commit-hooks,
-prettier (scoped to `markdown, json` — leave YAML to yamllint), and local `uv run` yamllint +
-ansible-lint. Copy from a conforming role; Phase 2 keeps the hook `rev`s current.
-
-`pyproject.toml` (uv-managed; values from the Current Standard table). Run `uv lock` after writing:
-
-```toml
-[project]
-name = "ansible-<rolename>"
-version = "0.1.0"
-requires-python = ">=3.11,<3.14"
-dependencies = [
-    "ansible-core>=2.16,<2.18",
-    "ansible-lint>=24.0.0",
-    "molecule>=24.0.0",
-    "molecule-plugins[docker]>=23.0.0",
-    "yamllint>=1.38.0",
-]
-```
+- **`.yamllint`** — `extends: default`, `ignore: | .venv/` (skip the virtualenv), `octal-values`
+  forbidding implicit+explicit octal; most stylistic rules disabled.
+- **`.ansible-lint`** — `profile: production`; `exclude_paths: [.cache/, molecule/, .ansible/, tests/]`.
+- **`.pre-commit-config.yaml`** — gitleaks, detect-secrets, pre-commit-hooks, prettier (scoped to
+  `markdown, json` — leave YAML to yamllint), local `uv run` yamllint + ansible-lint.
+- **`pyproject.toml`** — uv-managed; pins per the Current Standard table; run `uv lock` after writing.
 
 ### C. CI workflow — `releng`
 
-Replace with the standard template (versions from the Current Standard table). `lint` is in
-`release`'s `needs:` so lint failures block publishing.
+`.github/workflows/cicd.yml` — copy from a conforming role; pins per the Current Standard table.
+Triggers on push/PR to `main` + `workflow_dispatch`. Three jobs:
 
-```yaml
----
-name: CICD
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v8.2.0
-        with:
-          python-version: "3.12"
-      - run: uv sync
-      - run: uv run ansible-galaxy role install -r requirements.yml
-      - run: uv run yamllint .
-      - run: uv run ansible-lint
-
-  molecule:
-    name: Molecule
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v8.2.0
-        with:
-          python-version: "3.12"
-      - run: uv sync
-      - run: uv run molecule test
-        env:
-          PY_COLORS: "1"
-          ANSIBLE_FORCE_COLOR: "1"
-
-  release:
-    name: Release
-    needs: [lint, molecule]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v7
-      - uses: robertdebock/galaxy-action@1.2.1
-        with:
-          galaxy_api_key: ${{ secrets.GALAXY_API_KEY }}
-          git_branch: main
-```
+- **lint** — checkout → setup-uv (`python-version: '3.12'`) → `uv sync` →
+  `ansible-galaxy role install -r requirements.yml` → `uv run yamllint .` → `uv run ansible-lint`.
+- **molecule** — same setup → `uv run molecule test` (env `PY_COLORS` / `ANSIBLE_FORCE_COLOR`).
+- **release** — `needs: [lint, molecule]`, `if: github.ref == 'refs/heads/main'`,
+  `robertdebock/galaxy-action`. `lint` **must** be in `needs:` so lint failures block publishing.
 
 Extra Molecule scenarios: add a job mirroring `molecule` with `-s <scenario>` and add it to
 `release`'s `needs:`. macOS path (Homebrew): a `macos` job on `runs-on: macos-latest` that installs
@@ -300,59 +214,16 @@ collections).
 ### R. requirements + Arch prepare — `releng`
 
 The scenario's `requirements.yml` and the root `requirements.yml` both need at least
-`collections: - name: community.general`. Repos with role deps add a `roles:` key:
-
-```yaml
----
-roles:
-  - name: <owner>.<dependency>
-collections:
-  - name: community.general
-```
-
-If the scenario tests on Arch, add `prepare.yml` to upgrade packages before converge (prevents the
-install task's `update_cache` finding newer versions on the idempotency run):
-
-```yaml
----
-- name: Prepare
-  hosts: all
-  tasks:
-    - name: Upgrade all packages to current
-      become: true
-      community.general.pacman:
-        upgrade: true
-        update_cache: true
-      changed_when: false
-      when: ansible_os_family == 'Archlinux'
-```
+`collections: [community.general]`; repos with role deps add a `roles:` key (`<owner>.<dependency>`).
+If the scenario tests on Arch, add a `prepare.yml` that runs `community.general.pacman` with
+`upgrade: true, update_cache: true` (become, `changed_when: false`, Arch-guarded) before converge —
+stops the install task's `update_cache` from finding newer versions on the idempotency run.
 
 ### V. verify.yml — `infraeng`
 
-Replace boilerplate with real assertions. Per binary: stat it exists, run `--version`, assert on
-output; also stat deployed config files.
-
-```yaml
----
-- name: Verify
-  hosts: all
-  gather_facts: false
-  tasks:
-    - name: Check <pkg> binary
-      ansible.builtin.stat:
-        path: /usr/bin/<pkg>
-      register: pkg_bin
-    - name: Assert <pkg> is installed
-      ansible.builtin.assert:
-        that: pkg_bin.stat.exists
-    - name: Run <pkg> --version
-      ansible.builtin.command: <pkg> --version
-      register: pkg_version
-      changed_when: false
-    - name: Assert <pkg> version output
-      ansible.builtin.assert:
-        that: "'<pkg>' in pkg_version.stdout | lower"
-```
+Replace boilerplate (`assert: that: true`) with real assertions — copy the pattern from a conforming
+role: per binary, `stat` it exists and assert; run `<pkg> --version` (`changed_when: false`) and
+assert the name appears in `stdout | lower`; `stat` deployed config files too.
 
 Exceptions: GPU-dependent terminals (alacritty, ghostty) need `failed_when: false` + assert `rc == 0`;
 Wayland compositors (sway, hyprland) can't run in unprivileged containers — stat the binary only.
