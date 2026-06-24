@@ -40,7 +40,7 @@ a backgrounded `molecule test`) — wait for it.
 | Probe upstream for newer pins              | `releng`            |
 | Fix tasks; rewrite `verify.yml`; refactor  | `infraeng`          |
 | Lint configs, CI, requirements, pins       | `releng`            |
-| README + AGENTS.md                         | `infoarch`          |
+| README + AGENTS.md; keep docs in sync      | `infoarch`          |
 | Pre-PR review (parallel, read-only)        | `devrev` + `secrev` |
 | Run `molecule test`; confirm from recaps   | `qa`                |
 | Monitor CI, triage failures                | `releng`            |
@@ -113,6 +113,12 @@ conforming repos), have `releng` probe upstream and propose bumps:
 - Python tooling — newest stable `ansible-core` (respect the `<2.18`-style ceiling unless you also
   raise it deliberately), `ansible-lint`, `molecule`, `yamllint`.
 - `git`-pinned upstreams in tasks — `git ls-remote --tags <repo> | grep -v '{}' | tail -5`.
+- **Ansible best practices (web)** — the knowledge cutoff drifts, so `architect`/`releng` should
+  **search the live Ansible docs** before asserting a standard: `docs.ansible.com` (playbook/role
+  best-practices, module pages), the **porting guides** (`docs.ansible.com/ansible/latest/porting_guides/`)
+  for deprecations/removals across the `ansible-core` line, and the module's own doc page for its
+  **current default values and recommended parameters**. Prefer the official docs over memory; cite
+  the page when a change is non-obvious. Fold durable findings back into this skill.
 
 Apply accepted bumps **to the Current Standard table first**, then to the repo's files. Bumping a
 floor (e.g. the `ansible-core` ceiling) may require re-running `uv lock` and a fresh `molecule test`.
@@ -394,20 +400,34 @@ phases while it runs, but **confirm PASS before opening that repo's PR**.
 A code-quality lens beyond lint markers. `architect` analyses (read-only), `devrev` vets, `infraeng`
 applies. Look for:
 
+- **Minimalism — fewest lines that still read clearly.** The simplest role is the goal: every task,
+  parameter, and variable must earn its place. Collapse what a loop or a single module call can do;
+  delete dead vars, unused handlers, and commented-out cruft. Simpler beats clever — never trade
+  readability for terseness.
+- **Omit parameters equal to the module default.** If a module parameter's value matches its
+  documented default, **drop it** (`state: present` on most modules, `become: false`, `update_cache`
+  where already default, etc.). Confirm the default on the module's `docs.ansible.com` page (Phase 2
+  web check) before removing — defaults vary by module and shift across `ansible-core` versions.
+- **Don't restate role defaults.** A value already set in `defaults/main.yml` should not be repeated
+  inline in a task; reference the variable. Conversely, hardcoded values that belong in `defaults/`
+  move there (once) with clear, namespaced names — no magic paths/versions inline.
 - **Duplication** — near-identical per-OS task files; factor shared steps into `block:` /
   `include_tasks`, distro-specific bits behind guards or `vars/<os>.yml`.
 - **Loops over copy-paste** — repeated tasks differing only in a value → a single task with a loop.
-- **Variable hygiene** — hardcoded values that belong in `defaults/main.yml`; clear, namespaced
-  names; no magic paths/versions inline.
 - **Structure** — handlers for restarts (not inline), `block/rescue` where a failure path matters,
   tags where the role is large.
 - **Production gaps** — missing `become` scoping, over-broad `become: true`, tasks that should be
   `changed_when`/`check_mode` aware.
 
+When the cleanup changes what the role exposes or how it's used (a variable renamed, a default
+added, a parameter dropped), have **`infoarch` update `README.md` + `AGENTS.md` in the same PR** so
+the docs never drift from the role — keep them concise and command-first.
+
 **Policy: propose, don't auto-apply.** Apply only **low-risk, behavior-preserving** cleanups (FQCN,
-obvious dedup, moving a literal into `defaults/`) on the branch. List everything else — anything that
-could change behavior — as a **"Proposed follow-ups"** section in the PR body for the maintainer to
-decide. Don't bundle risky refactors into the modernization PR.
+obvious dedup, dropping a redundant default-valued parameter, moving a literal into `defaults/`) on
+the branch. List everything else — anything that could change behavior — as a **"Proposed
+follow-ups"** section in the PR body for the maintainer to decide. Don't bundle risky refactors into
+the modernization PR.
 
 ---
 
