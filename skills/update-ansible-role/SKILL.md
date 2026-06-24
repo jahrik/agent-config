@@ -83,6 +83,8 @@ A repo **needs remediation** if any hold:
 - **`pyproject.toml`**: missing, or doesn't pin `ansible-core` and `requires-python` per the table.
 - **`.ansible-lint`**: missing or `profile:` below `production`.
 - **`.yamllint`**: missing the `ignore: | .venv/` block.
+- **`.pre-commit-config.yaml`**: missing, or missing the standard hooks (gitleaks, detect-secrets,
+  pre-commit-hooks, prettier, local yamllint + ansible-lint).
 - **molecule.yml** (any scenario): outdated base image; Arch platform lacks `pull: true`.
 - **`meta/main.yml`**: wrong platform capitalization (`Archlinux` vs `ArchLinux`);
   `min_ansible_version` ≠ the pyproject pin; `galaxy_tags` with underscores/hyphens.
@@ -205,6 +207,10 @@ exclude_paths:
   - .ansible/
   - tests/
 ```
+
+`.pre-commit-config.yaml` — the standard hook set: gitleaks, detect-secrets, pre-commit-hooks,
+prettier (scoped to `markdown, json` — leave YAML to yamllint), and local `uv run` yamllint +
+ansible-lint. Copy from a conforming role; Phase 2 keeps the hook `rev`s current.
 
 `pyproject.toml` (uv-managed; values from the Current Standard table). Run `uv lock` after writing:
 
