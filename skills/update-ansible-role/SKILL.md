@@ -331,6 +331,16 @@ only after merge to main).
 
 ---
 
+## Wrap-up — fold learnings back
+
+Once the run is wrapped up (PRs opened/merged, sweep done), invoke **`/skill-creator`** to update
+this skill with anything **durable and general** the session surfaced — a new task-bug pattern, a
+shifted upstream standard or pin, a CI breakage and its fix, a sharper triage check. Skip one-off
+repo specifics (those belong in the repo's `AGENTS.md`). Keep it lean: prefer a tightened line or a
+single bullet over a new template, and trim at least as much as you add.
+
+---
+
 ## Notes
 
 - **`astral-sh/setup-uv` versioning** — no minor tags (`@v8` won't work); use the full version.
