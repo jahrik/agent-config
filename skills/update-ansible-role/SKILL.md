@@ -82,7 +82,8 @@ A repo **needs remediation** if any hold:
   a `release` job whose `needs:` omits `lint`; a lint job that doesn't run `ansible-lint`.
 - **`pyproject.toml`**: missing, or doesn't pin `ansible-core` and `requires-python` per the table.
 - **`.ansible-lint`**: missing or `profile:` below `production`.
-- **`.yamllint`**: missing the `ignore: | .venv/` block.
+- **`.yamllint`**: missing the `ignore: | .venv/` block, or off-standard — e.g. doesn't
+  `document-start: disable`, which fails ansible-lint's yaml rule on the no-`---` `.pre-commit-config.yaml`.
 - **`.pre-commit-config.yaml`**: missing, or missing the standard hooks (gitleaks, detect-secrets,
   pre-commit-hooks, prettier, local yamllint + ansible-lint).
 - **molecule.yml** (any scenario): outdated base image; Arch platform lacks `pull: true`.
