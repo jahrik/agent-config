@@ -18,11 +18,13 @@ agent-config/
 │   ├── systematic-debugging/  # Disciplined root-cause debugging
 │   ├── ansible/               # Ansible role conventions and patterns
 │   ├── docker/                # Docker image and Swarm conventions
+│   ├── go/                    # Go project conventions
 │   ├── python/                # Python project conventions
 │   ├── sync-repos/            # Sync all GitHub repos
 │   ├── update-ansible-role/   # Update pattern for ansible-* repos
 │   ├── update-arm-repo/       # Revive arm-* multi-arch image builds
 │   ├── update-docker-repo/    # Modernize docker-* image repos
+│   ├── update-go-repo/        # Maintain Go project repos
 │   └── update-python-repo/    # Modernize Python project repos
 ├── scripts/
 │   └── lint-config.py         # Consistency checks (name↔dir, catalog registration)
@@ -39,10 +41,10 @@ with no project-specific tooling baked in.
 
 **Skills** (`skills/`) — loaded on demand when their `description` matches:
 
-- **Reference:** `ansible`, `docker`, `python` — conventions per repo type
+- **Reference:** `ansible`, `docker`, `go`, `python` — conventions per repo type
 - **Practice:** `github-workflow`, `load-sdlc-agents`, `systematic-debugging` — how to work
 - **Authoring:** `agent-config-authoring`, `skill-creator` — extend this config
-- **Workflow:** `sync-repos`, `update-ansible-role`, `update-arm-repo`, `update-docker-repo`, `update-python-repo` — repo maintenance
+- **Workflow:** `sync-repos`, `update-ansible-role`, `update-arm-repo`, `update-docker-repo`, `update-go-repo`, `update-python-repo` — repo maintenance
 
 **Rules** (`AGENTS.md`) — always-loaded global rules and conventions. It's a **portable base**:
 machine- and account-specific detail belongs in each repo's own `AGENTS.md`, not here.
