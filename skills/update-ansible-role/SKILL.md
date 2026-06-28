@@ -175,10 +175,15 @@ Scan all `tasks/` files for these known bugs:
   `when: x | default(true) | bool`.
 - **Fact magic vars** — migrate every bare `ansible_<fact>` to `ansible_facts['<fact>']` (bracket,
   per Ansible docs) across tasks, molecule, templates, defaults, and verify; add `ansible.cfg` with
-  `[defaults]\ninject_facts_as_vars = False`. Migrate facts only — never touch connection vars
-  (`ansible_connection`, `ansible_user`, `ansible_python_interpreter`, `ansible_playbook_python`).
-  Watch the prefix trap (`ansible_distribution` vs `ansible_distribution_release` — replace longest
-  first). **Quote collision:** a bracket subscript inside a single-quoted YAML scalar (e.g. an
+  `[defaults]\ninject_facts_as_vars = False`. **Don't migrate from a hardcoded fact list** — it lags
+  upstream and hides network/hardware facts in `defaults/`+`templates/` (`ansible_default_ipv4`,
+  `ansible_user_uid` are common misses, not just `os_family`/`distribution`), and a static list can't
+  tell real facts from user vars that merely start with `ansible_` (e.g. `ansible_force_color`,
+  `ansible_lint`). Derive the real fact set live from ansible-core's `setup` module (`ansible -m setup
+localhost`); if the project's environment provides a local helper script for this, prefer it. Migrate
+  facts only — never touch connection vars (`ansible_connection`, `ansible_user`,
+  `ansible_python_interpreter`, `ansible_playbook_python`). **Quote collision:** a bracket subscript
+  inside a single-quoted YAML scalar (e.g. an
   `apt_repository` `repo: '... {{ ansible_facts['x'] }} ...'`) breaks YAML — use a double-quoted
   subscript there (`ansible_facts["x"]`). Meta-roles: see Notes (Galaxy publish ordering).
 - **Non-FQCN modules** — `ansible.builtin.package`, `community.general.pacman`, etc.
