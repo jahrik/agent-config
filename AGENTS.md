@@ -57,6 +57,7 @@ Reference skills (portable conventions):
 
 - `skills/ansible/` — Ansible role conventions and patterns
 - `skills/docker/` — Docker image and Swarm conventions
+- `skills/go/` — Go project conventions
 - `skills/python/` — Python project conventions
 
 Practice skills (how to work):
@@ -76,6 +77,7 @@ Workflow skills (repo maintenance actions):
 - `skills/update-ansible-role/` — update pattern for `ansible-*` repos
 - `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds
 - `skills/update-docker-repo/` — modernize `docker-*` image repos
+- `skills/update-go-repo/` — maintain Go project repos
 - `skills/update-python-repo/` — modernize Python project repos
 
 ---
