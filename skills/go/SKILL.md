@@ -70,8 +70,19 @@ ldflags:
 Fall back to `runtime/debug.ReadBuildInfo()` when the values are still defaults: `info.Main.Version`
 matches the git tag for `go install ...@vX`, and the `vcs.revision`/`vcs.time` build settings give
 the real commit and timestamp for local builds. Keep the fallback in a pure helper that takes a
-`*debug.BuildInfo` so the merge logic is unit-testable without a real build. (Local `go build`
-reports `(devel)` for the module version — guard against overriding `dev` with it.)
+`*debug.BuildInfo` so the merge logic is unit-testable without a real build. Guard against
+`info.Main.Version == "(devel)"` (and `""`) — `go run` and builds from a tree with no `.git` report
+that, and printing the literal `(devel)` as a version is worse than keeping `dev`. (On Go ≥ ~1.24 a
+plain in-repo `go build` stamps a VCS _pseudo-version_ like `v0.1.10-0.2026…-abc` rather than
+`(devel)`, so the guard mainly bites `go run` / no-VCS builds.)
+
+**Why this and not `git describe`:** ldflags-for-releases + `ReadBuildInfo`-fallback is the
+recommended hybrid. `git describe` needs the `.git` dir _at build time_, which the module cache
+(`go install ...@latest`) doesn't have — so it can't fill the `go install` gap that motivates this
+fallback at all. At runtime it's wrong (the installed binary isn't in any checkout). For releases
+it's redundant — GoReleaser's `{{.Version}}` already _is_ `git describe`. A repo shelling out to git
+at runtime does **not** imply git-at-build-time. A `git describe` Makefile target is fine _only_ as
+local-dev polish for prettier dirty-build strings — never as the version source of truth.
 
 ## CI Pattern
 
