@@ -200,6 +200,30 @@ PR picks it up). Repeat until Test ✅ Lint ✅ Build ✅.
 
 ---
 
+## Release — tag after merge
+
+A repo with a `release.yml` triggered on `v*` tags **only releases when a tag is pushed** — merging
+the PR is not enough. Once the maintainer has merged and given the go-ahead, cut the release:
+
+- **Pick the bump** from the commits since the last tag (`git describe --tags --abbrev=0`, then
+  `git log <tag>..main`): `fix:`-only → patch; any `feat:` → minor; breaking change → major.
+- **Tag `main` after merge, never a feature branch** — sync `main` first so the tag lands on the
+  merge commit, not an unmerged tip.
+- Push an **annotated** tag; that single push is what GoReleaser (which re-injects the version
+  ldflags — see the `go` skill) keys off of.
+
+```bash
+git checkout main && git pull --ff-only
+git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+gh run list --workflow=release.yml --limit 1   # confirm the release run started
+```
+
+**Outward-facing — get explicit go-ahead.** A pushed tag publishes a release and is hard to unwind;
+never tag pre-merge or auto-release. If the repo has no `release.yml`/`.goreleaser.yml`, there's
+nothing to tag — skip this step.
+
+---
+
 ## Wrap-up — fold learnings back
 
 Once the run is wrapped up, invoke **`/skill-creator`** to update this skill (or the `go` skill) with
