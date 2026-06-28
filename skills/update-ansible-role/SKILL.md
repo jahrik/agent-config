@@ -52,19 +52,20 @@ a backgrounded `molecule test`) — wait for it.
 Every template below references these. **To roll out a new standard, bump it here only**, then run
 the skill — Phase 2 propagates it to the repos.
 
-| Knob                         | Current value                                           |
-| ---------------------------- | ------------------------------------------------------- |
-| `astral-sh/setup-uv`         | `@v8.2.0` (full version — no minor tags published)      |
-| `actions/checkout`           | `@v7`                                                   |
-| `robertdebock/galaxy-action` | `@1.2.1`                                                |
-| CI Python                    | `'3.12'` (not `'3.x'` — resolves too new for the pin)   |
-| `requires-python`            | `>=3.11,<3.14`                                          |
-| `ansible-core`               | `>=2.16,<2.18` (and `min_ansible_version: '2.16'`)      |
-| `ansible-lint`               | `>=24.0.0`, profile `production`                        |
-| `molecule`                   | `>=24.0.0`; `molecule-plugins[docker]>=23.0.0`          |
-| `yamllint`                   | `>=1.38.0`                                              |
-| Ubuntu molecule image        | current `geerlingguy/docker-ubuntuXXXX-ansible` (24.04) |
-| Arch molecule image          | rolling Arch-ansible image with `pull: true`            |
+| Knob                         | Current value                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `astral-sh/setup-uv`         | `@v8.2.0` (full version — no minor tags published)                                     |
+| `actions/checkout`           | `@v7`                                                                                  |
+| `robertdebock/galaxy-action` | `@1.2.1`                                                                               |
+| CI Python                    | `'3.12'` (not `'3.x'` — resolves too new for the pin)                                  |
+| `requires-python`            | `>=3.12,<3.14` (ansible-core 2.20+ needs Python ≥3.12)                                 |
+| `ansible-core`               | `>=2.16,<2.22` (and `min_ansible_version: '2.16'`)                                     |
+| `ansible-lint`               | `>=24.0.0`, profile `production`                                                       |
+| `molecule`                   | `>=24.0.0`; `molecule-plugins[docker]>=23.0.0`                                         |
+| `yamllint`                   | `>=1.38.0`                                                                             |
+| Ubuntu molecule image        | current `geerlingguy/docker-ubuntuXXXX-ansible` (26.04)                                |
+| Arch molecule image          | rolling Arch-ansible image with `pull: true`                                           |
+| Fact access                  | `ansible_facts['<fact>']` (bracket); `ansible.cfg` sets `inject_facts_as_vars = False` |
 
 ---
 
@@ -86,7 +87,13 @@ A repo **needs remediation** if any hold:
   `document-start: disable`, which fails ansible-lint's yaml rule on the no-`---` `.pre-commit-config.yaml`.
 - **`.pre-commit-config.yaml`**: missing, or missing the standard hooks (gitleaks, detect-secrets,
   pre-commit-hooks, prettier, local yamllint + ansible-lint).
-- **molecule.yml** (any scenario): outdated base image; Arch platform lacks `pull: true`.
+- **molecule.yml** (any scenario): outdated base image; Arch platform lacks `pull: true`; a
+  `localhost` scenario whose inventory binds `ansible_connection: local` under `inventory.hosts.<name>`
+  instead of `inventory.host_vars.<name>` (the `hosts:` form can be read as a group, so the local
+  connection doesn't bind — switch to `host_vars:`).
+- **facts**: any bare `ansible_<fact>` magic var (`ansible_os_family`, `ansible_distribution*`,
+  `ansible_env`, `ansible_user_dir`, …) in tasks/molecule/templates/defaults/verify, or a missing
+  `ansible.cfg` `inject_facts_as_vars = False` (Phase 3, step T).
 - **`meta/main.yml`**: wrong platform capitalization (`Archlinux` vs `ArchLinux`);
   `min_ansible_version` ≠ the pyproject pin; `galaxy_tags` with underscores/hyphens.
 - **requirements**: scenario `requirements.yml` or root `requirements.yml` missing.
@@ -123,8 +130,16 @@ conforming repos), have `releng` probe upstream and propose bumps:
   **current default values and recommended parameters**. Prefer the official docs over memory; cite
   the page when a change is non-obvious. Fold durable findings back into this skill.
 
+When a bump is broad and risky (new base image, major-version pin), **pilot it on one representative
+repo end-to-end** (lint + full `molecule test`) before propagating — surface breakage once, not 12×.
+
 Apply accepted bumps **to the Current Standard table first**, then to the repo's files. Bumping a
-floor (e.g. the `ansible-core` ceiling) may require re-running `uv lock` and a fresh `molecule test`.
+ceiling (e.g. `ansible-core`) requires `uv lock --upgrade` then a fresh `molecule test` — **plain
+`uv lock` is conservative**: it keeps an existing in-range pin, so widening `<2.18`→`<2.22` alone
+won't move 2.16.x onto 2.21.x; you must `--upgrade` (or `--upgrade-package ansible-core`).
+**Coupling:** `ansible-core` 2.20+ requires Python ≥3.12, so reaching latest forces
+`requires-python` to `>=3.12` (drop the 3.11 floor). The Ubuntu 26.04 image ships Python 3.14 on the
+_target_ — fine; the `<3.14` cap only constrains the controller venv.
 
 ---
 
@@ -158,6 +173,14 @@ Scan all `tasks/` files for these known bugs:
   installs. Fix the generic condition to `!= 'Archlinux'`.
 - **`when: x | default('true') == true`** — string vs boolean is always False. Fix:
   `when: x | default(true) | bool`.
+- **Fact magic vars** — migrate every bare `ansible_<fact>` to `ansible_facts['<fact>']` (bracket,
+  per Ansible docs) across tasks, molecule, templates, defaults, and verify; add `ansible.cfg` with
+  `[defaults]\ninject_facts_as_vars = False`. Migrate facts only — never touch connection vars
+  (`ansible_connection`, `ansible_user`, `ansible_python_interpreter`, `ansible_playbook_python`).
+  Watch the prefix trap (`ansible_distribution` vs `ansible_distribution_release` — replace longest
+  first). **Quote collision:** a bracket subscript inside a single-quoted YAML scalar (e.g. an
+  `apt_repository` `repo: '... {{ ansible_facts['x'] }} ...'`) breaks YAML — use a double-quoted
+  subscript there (`ansible_facts["x"]`). Meta-roles: see Notes (Galaxy publish ordering).
 - **Non-FQCN modules** — `ansible.builtin.package`, `community.general.pacman`, etc.
 - **Arch installs** — `archlinux.yml` uses `community.general.pacman`, not generic `package:`.
 - **Permission churn** — a `template` (`mode: '0644'`) followed by a `file` setting `0755` on the
@@ -350,8 +373,26 @@ single bullet over a new template, and trim at least as much as you add.
   `ansible-core` than the pin allows. Pin `'3.12'` and cap `requires-python`.
 - **macOS Galaxy collections** — `ansible-galaxy role install -p <path>` installs roles only; add a
   separate `ansible-galaxy collection install` step.
-- **Transient CI failure (GitHub API rate limit)** — roles hitting
-  `api.github.com/.../releases/latest` unauthenticated can trip the 60 req/hr limit on shared
-  runners; re-run the job rather than treating it as a code bug.
+- **Transient CI failures — re-run, don't debug** — environmental flakes that aren't code bugs:
+  GitHub API rate limit (`api.github.com/.../releases/latest`, 60 req/hr unauthenticated); Arch
+  pacman mirror drops (`failed retrieving file ... from *.mirror.pkgbuild.com`, `failed to commit
+transaction`); AUR clone SSL resets (`unable to access 'https://aur.archlinux.org/...': OpenSSL
+... unexpected eof`). Tell: one OS host fails on a download while the other passes. Re-run the run;
+  a green pass lets `release` publish.
+- **Meta-role ↔ Galaxy publish ordering** — `inject_facts_as_vars = False` is global to the whole
+  play, so a meta-role that `include_role`s other `<owner>.*` roles imposes it on their **published
+  Galaxy** versions too. Until those deps' migration is merged **and released**, the meta-role's CI
+  pulls old magic-var deps and fails (hard `undefined` on a strict controller; only a deprecation
+  warning on a lenient one — so it can pass by luck). Keep the setting uniform; open all PRs together
+  but **merge + release leaf roles first**, then `gh run rerun` the meta-roles and merge. No code
+  change fixes this — it's pure ordering.
 - **PR branch hygiene** — before opening a PR, confirm `git log --oneline origin/main..update-role`
-  shows only intended commits; a branch cut from a non-main base drags its unmerged commits in.
+  shows only intended commits; a branch cut from a non-main base drags its unmerged commits in. A
+  reused `update-role` from a prior merged PR needs `git push --force-with-lease` to overwrite the
+  stale remote branch.
+- **Local sweep resource exhaustion (Steam Deck / Podman)** — a long sequential `molecule test`
+  sweep accumulates container layers and memory pressure; later repos fail with containers killed
+  mid-run (`rc=137`/`rc=125`, "no such container", "container state improper", spurious
+  `unreachable=1`). This is environmental, **not** a code bug. After the sweep, `podman system
+prune -f` and re-run the failures one at a time (prune between) — they pass clean. Add a
+  `podman container prune` between repos in the sweep loop to keep state lean.
