@@ -47,6 +47,10 @@ go test -race -coverprofile=coverage.out ./...   # race detector + coverage
 go mod tidy               # sync go.mod/go.sum with imports
 ```
 
+`-race` needs a C compiler (it forces `CGO_ENABLED=1`). On a host without one — minimal or
+immutable distros — don't skip race tests: run them inside a container/toolbox that supplies a
+compiler, or rely on the CI `test` job. Never paper over it with `CGO_ENABLED=0`.
+
 ## Versioning (the `dev` / `none` / `unknown` trap)
 
 Build metadata is injected by GoReleaser via ldflags, but `go install` and local `go build`
