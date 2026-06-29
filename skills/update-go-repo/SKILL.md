@@ -237,7 +237,15 @@ you add.
 ## Notes
 
 - **`go-version` vs `go.mod`** — keep the CI `go-version` aligned with the `go.mod` directive; a CI
-  Go newer than the floor can pass while `go install` on the floor fails, and vice versa.
+  Go newer than the floor can pass while `go install` on the floor fails, and vice versa. A dep bump
+  can silently raise the floor (`go get` rewrites the `go` directive to a dep's minimum) — re-check
+  `go.mod`'s `go` line after `go get -u` and realign every workflow's `go-version` if it moved.
+- **Major-version dep bumps are a code migration, not a path swap** — a `vN`→`vM` jump (e.g.
+  go-github) changes the import path _and_ the API. Expect renamed/relocated symbols, constructors
+  that now return errors, and once-settable struct fields turned into read-only accessors set via
+  functional options at construction. Skim the new major's changelog, fix call sites + tests, and let
+  `go build ./...` drive you. A big jump can also drop a now-redundant dep (e.g. an auth helper
+  replacing a separate oauth2 client) — take the simplification.
 - **`golangci-lint` pinning** — pin the action's `version:` to a full tag; the v2 config schema
   (`version: "2"`) is required by recent releases and rejected by old ones, so the pin and the config
   schema must move together.
