@@ -29,7 +29,7 @@ churn.
 2. **Bump pins deliberately** — update the type's Current Standard table first, then the repo;
    pilot broad bumps on one repo end-to-end before propagating.
 3. **One branch (`update-repo`), one PR per repo**; accumulate every fix on it.
-4. **Lint + test locally**, then `devrev` + `secrev` in parallel on the diff; fix real findings.
+4. **Lint + test locally**, then `reviewer` in parallel on the diff; fix real findings.
 5. **Open the PR** — never push to main, never auto-merge. GitHub ops via `mcp-github` tools
    only (`gh_pr_create`, `gh_run_list`, …) — the `gh` CLI is banned.
 6. **Fold durable learnings back** via `/skill-creator`; repo one-offs go to that repo's `AGENTS.md`.

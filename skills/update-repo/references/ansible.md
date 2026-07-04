@@ -68,7 +68,7 @@ cap constrains the controller venv.
 
 ## Remediation steps
 
-### T. Fix tasks (`infraeng`)
+### T. Fix tasks (`devlead`)
 
 Known bugs to scan for in all `tasks/` files:
 
@@ -131,14 +131,14 @@ deps add a `roles:` key. Arch scenarios add `prepare.yml` running `community.gen
 `upgrade: true, update_cache: true` (become, `changed_when: false`, Arch-guarded) so the install
 task's cache update doesn't break the idempotency run.
 
-### V. verify.yml (`infraeng`)
+### V. verify.yml (`devlead`)
 
 Replace `assert: that: true` with real assertions: `stat` each binary and assert; run
 `<pkg> --version` (`changed_when: false`) and assert the name in `stdout | lower`; `stat` deployed
 configs. Exceptions: GPU-dependent terminals (alacritty, ghostty) need `failed_when: false` +
 assert `rc == 0`; Wayland compositors can't run in unprivileged containers — stat the binary only.
 
-### D. Docs (`infoarch`)
+### D. Docs (`releng`)
 
 README: what the role does, supported OS, key variables, example playbook, testing section with
 plain commands (`uv sync`, `source .venv/bin/activate`, `yamllint .`, `ansible-lint`,

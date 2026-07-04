@@ -7,7 +7,7 @@
 name: <slug>
 description: Use to <when to dispatch this agent — used for routing>
 tools: Read, Grep, Glob, Bash # omit to inherit all; scope reviewers read-only
-model: sonnet # opus for heavy reasoning (architect, secrev); omit to inherit
+model: sonnet # opus for heavy reasoning (architect, reviewer); omit to inherit
 ---
 
 You are <role>. <One-line charter.>
@@ -34,9 +34,9 @@ You are <role>. <One-line charter.>
 - **Distinct from:** disambiguate against the 2–3 overlapping agents — one line each, "they do X;
   you do Y". Highest-leverage routing aid; keep it tight.
 - **Escalate** is a list of `target → trigger` pairs, not prose — it encodes the handoff graph.
-- **`model`**: `opus` for heavy-reasoning/high-stakes (architect, secrev), `sonnet` for the rest;
+- **`model`**: `opus` for heavy-reasoning/high-stakes (architect, reviewer), `sonnet` for the rest;
   omit to inherit the session model.
-- Review-only agents (`devrev`, `qa`, `secrev`) get read-only tools — no `Edit`/`Write`.
+- Review-only agents (`reviewer`, `qa`) get read-only tools — no `Edit`/`Write`.
 - Body ≤ ~150 lines — a focused system prompt, not a manual.
 
 ## Context budget
