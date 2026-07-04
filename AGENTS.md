@@ -47,10 +47,14 @@ The deployment role installs a standard toolchain to `~/.local/bin` — prefer i
 pipelines:
 
 - **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
-  (syntax-aware) code search.
-- **Data:** `jq` (JSON), `yq` (YAML), `xsv` (CSV), `htmlq` (HTML extraction).
+  (syntax-aware) code search; `tokei` for instant repo language/size stats.
+- **Data:** `jq` (JSON), `yq` (YAML), `xsv` (CSV), `htmlq` (HTML extraction), `gron` to flatten
+  JSON into greppable lines when the structure is unknown, `jc` to turn classic command output
+  (`ps`, `df`, `ip`, …) into JSON, `duckdb` for SQL over large CSV/JSON instead of reading it.
+- **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
+- **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
+  (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
 - **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
-- **Interactive selection:** `fzf` — for the human at the terminal; don't script it in automation.
 - **GitHub:** the `mcp-github` tools only (Hard Rule 8) — never the `gh` CLI.
 - **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
 
