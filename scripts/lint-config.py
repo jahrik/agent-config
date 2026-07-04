@@ -9,6 +9,9 @@ enforced here mechanically rather than by vigilance. Checks:
   - every skill and agent has a non-empty `description:`
   - every skill is registered in AGENTS.md and README.md
   - every agent is registered in AGENTS.md and agents/README.md
+  - every SKILL.md fits the on-invoke context budget (warn > ~2KB, fail > 2.5KB;
+    `references/` and `scripts/` are exempt — they load on demand)
+  - every `references/...` / `scripts/...` path a skill mentions actually exists
 
 Structural problems are fatal (exit 1). An over-budget `description:` is a soft
 "~25 words" target, so it is reported as a warning and does not fail CI.
@@ -18,6 +21,7 @@ Run: python3 scripts/lint-config.py   (exits non-zero on any structural problem)
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -25,6 +29,9 @@ REPO = Path(__file__).resolve().parent.parent
 SKILLS = REPO / "skills"
 AGENTS = REPO / "agents"
 DESCRIPTION_WORD_TARGET = 25  # routing-trigger budget; soft, warning-only
+SKILL_SIZE_TARGET = 2048  # bytes; ~500 tokens — the working budget (warning)
+SKILL_SIZE_MAX = 2560  # bytes; hard ceiling (error) — move detail to references/
+SKILL_PATH_RE = re.compile(r"\b((?:references|scripts)/[\w.-]+)")
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -89,6 +96,19 @@ def main() -> int:
             err(f"{label}: not registered in AGENTS.md Skills list (`skills/{slug}/`)")
         if f"{slug}/" not in root_readme:
             err(f"{label}: not registered in README.md structure block")
+
+        # On-invoke context budget: SKILL.md loads whole; references/scripts don't.
+        size = skill_md.stat().st_size
+        if size > SKILL_SIZE_MAX:
+            err(f"{label}: SKILL.md is {size} bytes (max {SKILL_SIZE_MAX}); move detail to references/")
+        elif size > SKILL_SIZE_TARGET:
+            warn(f"{label}: SKILL.md is {size} bytes (target ≤{SKILL_SIZE_TARGET}); consider trimming")
+
+        # Every references/... or scripts/... path mentioned must exist.
+        for doc in [skill_md, *sorted(skill_md.parent.glob("references/*.md"))]:
+            for ref in set(SKILL_PATH_RE.findall(doc.read_text(encoding="utf-8"))):
+                if not (skill_md.parent / ref).is_file():
+                    err(f"{label}: {doc.name} links {ref!r} but the file does not exist")
 
     # --- Agents ---
     for agent_md in sorted(AGENTS.glob("*.md")):

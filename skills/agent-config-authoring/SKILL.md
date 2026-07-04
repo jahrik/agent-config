@@ -5,118 +5,31 @@ description: Conventions and steps for authoring subagents and global rules in t
 
 # Agent-Config Authoring
 
-How to add or edit **subagents** and **global rules** in this repo. For authoring **skills**, see
-the `skill-creator` skill. `agent-config` is the **single source of truth**; the `ansible-ai-agents`
-role symlinks it into each tool.
+How to add or edit **subagents** and **global rules** (skills: see `skill-creator`).
+`agent-config` is the single source of truth; the `ansible-ai-agents` role symlinks it into each
+tool (full table: `references/authoring-details.md`).
 
-## Repo layout
+## Which layer?
 
-```
-agent-config/
-├── AGENTS.md          # global rules — always loaded, keep lean
-├── agents/            # Claude Code subagent personas (one .md each)
-└── skills/            # modular skills (one dir each, with SKILL.md)
-```
+- **Global rule** → `AGENTS.md`: short, universal, worth always-on cost. File ≤ ~200 lines / ~2k
+  tokens; push detail into a skill with a one-line pointer.
+- **Skill** → `skills/<name>/SKILL.md`: knowledge or procedure loaded on demand by `description`
+  match. ≤ ~2KB; detail in `references/`, executable steps in `scripts/`.
+- **Subagent** → `agents/<slug>.md`: a persona with stance + tool scope. Claude Code only.
 
-## Which layer? (rule vs skill vs subagent)
+## Subagent essentials
 
-- **Global rule** → `AGENTS.md`. A short, universal directive that should apply to _every_
-  session (e.g. "never push to main"). Always loaded — add sparingly.
-- **Skill** → `skills/<name>/SKILL.md`. Reference knowledge or a repeatable procedure,
-  loaded **on demand** when its `description` matches. Authored per the `skill-creator` skill.
-- **Subagent** → `agents/<name>.md`. A persona with a defined stance and tool scope,
-  spawned for a task. Claude Code only.
-
-## Authoring a subagent
-
-Create `agents/<slug>.md`:
-
-```markdown
----
-name: <slug>
-description: Use to <when to dispatch this agent — used for routing>
-tools: Read, Grep, Glob, Bash # omit to inherit all; scope reviewers read-only
-model: sonnet # opus for heavy reasoning (architect, secrev); omit to inherit
----
-
-You are <role>. <One-line charter.>
-
-**Distinct from:**
-
-- `<neighbor>` — <what it does> (what you do instead)
-
-## Scope
-
-## Mindset
-
-## Principles
-
-## Does NOT
-
-## Escalate
-
-- **<target agent or human maintainer>** — <the trigger condition>.
-```
-
-- `description` says _when to use it_ (that's how the orchestrator picks). For agents that
-  should fire automatically (reviewers, testers), start it with **"Use proactively …"**.
-- **Distinct from:** disambiguate against the 2–3 agents this one overlaps with — one line each, framed as "they do X; you do Y". This is the highest-leverage routing aid; keep it tight.
-- **Escalate** is a list of `target → trigger` pairs (bold target, then the condition), not prose — it encodes the handoff graph.
-- **`model`**: route heavy-reasoning / high-stakes agents to `opus` (architect, secrev) and the rest to `sonnet`; omit to inherit the session model.
-- Scope review-only agents (`devrev`, `qa`, `secrev`) to read-only tools (no `Edit`/`Write`).
-- Keep the body ≤ ~150 lines — a focused system prompt, not a manual.
+Frontmatter `name`/`description`/`tools`/`model` + a focused system prompt ≤ ~150 lines with
+**Distinct from / Scope / Mindset / Principles / Does NOT / Escalate** sections. `description` is
+the routing trigger ("Use proactively…" for auto-fire reviewers). Reviewers get read-only tools;
+`opus` only for heavy reasoning. Template + rationale: `references/authoring-details.md`.
 
 ## Portable core vs. environment binding
 
-The agents are meant to be a **reusable base others can fork**, so keep two layers separate:
-
-- **Portable core (this whole config):** the agents, the skills, and the global `AGENTS.md`
-  rules/conventions/catalogs. Universal SDLC. **No repo names, registries, OS names, secret
-  names, or local paths** — say "the project's conventions" / "the matching skill" / "the
-  project's environment (`AGENTS.md`)" instead.
-- **Environment binding (per project / per machine):** which repos, registries, secrets, OS
-  rules, and local tooling. Lives in each repo's own `AGENTS.md` + `README.md` (and the
-  placeholder Owner Context in the global `AGENTS.md`). The global base ships clean; a fork
-  fills in its own specifics there and leaves the agents and skills untouched.
-
-When you catch yourself naming a tool, registry, or path in an agent or skill body, push it
-down into the project's `AGENTS.md` and reference it generically.
-
-## Editing global rules (`AGENTS.md`)
-
-- Add to **Hard Rules** only if it's universal and worth always-on cost.
-- Keep `AGENTS.md` ≤ ~200 lines / ~2k tokens. Push detail down into a skill and leave a
-  one-line pointer.
-
-## Context budget
-
-| File                            | Loaded               | Target                      |
-| ------------------------------- | -------------------- | --------------------------- |
-| `AGENTS.md` (global + project)  | every turn           | ≤ ~200 lines / ~2k tokens   |
-| skill / subagent `description:` | every turn (routing) | one line, ≤ ~25 words       |
-| skill body                      | on invoke            | ≤ ~500 lines (split beyond) |
-| subagent body                   | on spawn             | ≤ ~150 lines                |
-
-## Where machine / environment specifics go
-
-Tooling and local-desktop detail (local wrappers, container-runtime shims, host paths, OS
-quirks, publishing secrets) belongs in **each repo's own `AGENTS.md` / `README.md`**, never in
-the agents, the skills, or the global `AGENTS.md` base — those stay portable so a fork reuses
-them unchanged. Truly machine-local notes (a wrapper that only exists on your workstation) can
-go in a private file outside this shared config. When a skill or agent needs that context, it
-refers to "the project's environment (`AGENTS.md`)" generically rather than naming a tool.
-
-## Deployment (how it reaches each tool)
-
-The `ansible-ai-agents` role symlinks from `~/.config/agents/` (the clone of this repo):
-
-| Source      | → Destination                | Tool                 |
-| ----------- | ---------------------------- | -------------------- |
-| `AGENTS.md` | `~/.claude/CLAUDE.md`        | Claude Code (global) |
-| `skills/`   | `~/.claude/skills`           | Claude Code          |
-| `agents/`   | `~/.claude/agents`           | Claude Code          |
-| `AGENTS.md` | `~/.gemini/config/AGENTS.md` | AGY/Antigravity      |
-| `skills/`   | `~/.gemini/config/skills`    | AGY/Antigravity      |
+The config is a reusable base others fork. **No repo names, registries, OS names, secret names,
+or local paths** in agents, skills, or the global `AGENTS.md` — say "the project's conventions" /
+"the project's environment (`AGENTS.md`)". Environment specifics live in each repo's own
+`AGENTS.md` + `README.md`.
 
 ## Validate before commit
 
@@ -124,12 +37,6 @@ The `ansible-ai-agents` role symlinks from `~/.config/agents/` (the clone of thi
 uvx pre-commit run --all-files   # gitleaks, detect-secrets, prettier, lint-config
 ```
 
-Prettier reformats markdown tables — let it, then re-stage. Never commit secrets or
-internal IPs (the hooks block them). The `lint-config` hook (`scripts/lint-config.py`)
-fails the commit if an agent's frontmatter `name` doesn't match its filename or the agent
-isn't registered in `AGENTS.md` and `agents/README.md` — register it in both before committing.
-
-## Portability
-
-Subagents are a Claude Code feature; other tools do not read `~/.claude/agents/`. The
-_content_ is portable — shared rules belong in `AGENTS.md`, which AGY reads too.
+Prettier reformats markdown tables — let it, re-stage. The `lint-config` hook fails on
+`name` ≠ filename/slug, missing registration in `AGENTS.md`/`README.md`, or an over-budget
+SKILL.md.

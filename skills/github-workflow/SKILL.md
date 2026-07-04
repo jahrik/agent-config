@@ -5,73 +5,46 @@ description: The branch → commit → PR → review → merge flow on GitHub �
 
 # GitHub Workflow
 
-The standard change-delivery flow. **Never push to `main`; never auto-merge** — the maintainer merges.
+The standard change-delivery flow. **Never push to `main`; never auto-merge** — the maintainer
+merges. **Never use the `gh` CLI** — GitHub operations go through the `mcp-github` tools
+(`gh_*`); a missing capability means an issue on the MCP server's repo (`gh_issue_create`) and a
+handoff to the maintainer.
 
 ## Branch
 
-One branch, one PR per unit of work. Cut it from an up-to-date default branch:
+One branch, one PR per unit of work, cut from an up-to-date default branch:
 
 ```bash
 git checkout main && git pull --ff-only
-git checkout -b <type>-<short-topic>      # e.g. fix-login-retry, update-repo
+git checkout -b <type>-<short-topic>      # e.g. fix-login-retry
 ```
 
 ## Commit
 
-- **Conventional Commits**: `<type>(<scope>): <summary>` — `feat`, `fix`, `docs`, `refactor`,
-  `test`, `chore`, `ci`. Imperative, lower-case summary.
-- Body: what changed and _why_, wrapped ~72 cols.
-- **Attribute the AI model** with a trailer (Hard Rule):
-
-```
-Co-Authored-By: <Model Name> <noreply@…>
-```
-
-Keep one logical change per commit (or a small, coherent series) — all on the one branch.
+- **Conventional Commits**: `<type>(<scope>): <summary>` — feat, fix, docs, refactor, test,
+  chore, ci. Imperative, lower-case; body says what and _why_, wrapped ~72 cols.
+- **Attribute the AI model** (Hard Rule): `Co-Authored-By: <Model Name> <noreply@…>`
+- One logical change per commit (or a small coherent series), all on the one branch.
 
 ## Open the PR
 
-```bash
-git push -u origin <branch>
-gh pr create --title "<type>: <summary>" --body "<what + why + test plan>"
-```
-
-- Title mirrors the commit convention.
-- Body: bullet list of changes + a short **test plan** checklist (tick items as verified,
-  including the CI run once it's green).
-- Gather everything first — don't open a PR mid-fixes and a second one for the rest. Push
-  follow-up fixes to the same branch; the open PR picks them up.
+`git push -u origin <branch>`, then `gh_pr_create` — title mirrors the commit convention; body is
+a bullet list of changes + a **test plan** checklist. Never a second PR for follow-up fixes; push
+them to the same branch and the open PR picks them up.
 
 ## Monitor CI
 
-```bash
-RUN=$(gh run list --branch <branch> --json databaseId --limit 1 --jq '.[0].databaseId')
-gh run watch $RUN
-gh run view $RUN --json jobs --jq '.jobs[] | "\(.name): \(.conclusion)"'
-```
-
-On failure: `gh run view --log-failed $RUN | tail -80`, fix locally, re-run checks, push.
-Investigate failures — never dismiss one as "transient" without evidence.
+`gh_pr_checks` / `gh_run_list` → `gh_run_get` until the run concludes; `gh_run_failed_logs` on
+failure. Fix locally, re-run checks, push. Never dismiss a failure as "transient" without
+evidence. (Workflow rerun has no tool yet — issue + maintainer.)
 
 ## Handle review feedback
 
-Request an automated review if the repo has one (e.g. `gh pr comment <N> --body "@copilot review"`).
-For each comment: apply the fix, or reply with the rationale if you disagree. Then **reply and
-resolve the thread** so the PR ends clean.
-
-```bash
-# Get unresolved review-thread IDs + the first comment of each
-gh api graphql -f query='
-{ repository(owner:"<owner>",name:"<repo>") { pullRequest(number:<N>) {
-    reviewThreads(first:100) { nodes { id isResolved
-      comments(first:1){ nodes { databaseId path body author { login } } } } } } } }'
-
-# Reply to a thread's first comment, then resolve the thread
-gh api -X POST repos/<owner>/<repo>/pulls/<N>/comments/<comment_id>/replies -f body="<reply>"
-gh api graphql -f query='mutation($id:ID!){ resolveReviewThread(input:{threadId:$id}){ thread { isResolved } } }' -f id="<PRRT_…>"
-```
+Request an automated review if the repo has one (`gh_pr_comment` with `@copilot review`). Per
+comment: apply the fix, or reply with rationale — then **reply and resolve the thread** so the PR
+ends clean: `gh_review_threads_get` → `gh_review_comment_reply` → `gh_review_thread_resolve`.
 
 ## Merge
 
-Confirm CI is green and threads are resolved, then **hand off to the maintainer to merge**.
-Never run `gh pr merge` autonomously.
+Confirm CI green and threads resolved, then **hand off to the maintainer**. Never call
+`gh_pr_merge` autonomously.

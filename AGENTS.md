@@ -25,6 +25,9 @@ as needed.
 6. **Never commit or push to `main`.** Always branch, open a PR, and let the maintainer merge — never
    `git push` to main and never auto-merge a PR.
 7. **Attribute commits** with a `Co-Authored-By:` trailer for the AI model used.
+8. **Never use the `gh` CLI.** GitHub operations go through the `mcp-github` MCP tools (`gh_*`); if
+   a capability is missing, open an issue on the MCP server's repo and hand the action to the
+   maintainer.
 
 ---
 
@@ -73,12 +76,8 @@ Authoring skills (extend this config):
 
 Workflow skills (repo maintenance actions):
 
-- `skills/sync-repos/` — sync all GitHub repos
-- `skills/update-ansible-role/` — update pattern for `ansible-*` repos
-- `skills/update-arm-repo/` — revive `arm-*` multi-arch image builds
-- `skills/update-docker-repo/` — modernize `docker-*` image repos
-- `skills/update-go-repo/` — maintain Go project repos
-- `skills/update-python-repo/` — modernize Python project repos
+- `skills/update-repo/` — maintain/modernize repos by type (`ansible-*`, `docker-*`, `arm-*`, Go,
+  Python); per-type checklists in its `references/`
 
 ---
 
