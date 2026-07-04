@@ -14,6 +14,6 @@ When the user asks to load the SDLC agents, or you are starting a complex task t
    - Use `view_file` to read the persona's content.
    - Extract the `description:` from the YAML frontmatter.
    - Use the remaining markdown body as the `system_prompt`.
-   - Call the `define_subagent` tool with the extracted `name`, `description`, and `system_prompt`. Enable read and subagent tools by default. Enable write tools if the persona is meant to implement code (like `devlead` or `infraeng`), but leave write tools disabled for read-only personas (like `devrev`, `qa`, `secrev`).
+   - Call the `define_subagent` tool with the extracted `name`, `description`, and `system_prompt`. Enable read and subagent tools by default. Enable write tools if the persona is meant to implement code (like `devlead`), but leave write tools disabled for read-only personas (like `reviewer`, `qa`).
 
 Once defined, these subagents will be available for you to `invoke_subagent` for the duration of the conversation.

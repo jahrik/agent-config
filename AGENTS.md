@@ -84,19 +84,16 @@ Workflow skills (repo maintenance actions):
 ## Agents (Roles)
 
 Subagent personas live in `agents/` and are deployed to `~/.claude/agents/` by the `ansible-ai-agents`
-role. They follow a simplified SDLC: plan → implement → review → test → secure → release. Project- and
+role. They follow a simplified SDLC: plan → implement → review → test → release. Project- and
 environment-specific detail lives in each repo's `AGENTS.md`, not in the agent definitions.
 
-| Agent       | Use for                                    |
-| ----------- | ------------------------------------------ |
-| `architect` | Planning and design before implementation  |
-| `devlead`   | Implementing features and fixes            |
-| `infraeng`  | Infrastructure-as-code, images, deployment |
-| `devrev`    | Code review (correctness, simplification)  |
-| `qa`        | Testing, idempotency, dogfooding           |
-| `secrev`    | Security review                            |
-| `releng`    | Versioning, CI/CD, publishing              |
-| `infoarch`  | Documentation                              |
+| Agent       | Use for                                            |
+| ----------- | -------------------------------------------------- |
+| `architect` | Planning and design before implementation          |
+| `devlead`   | Implementing features, fixes, and infrastructure   |
+| `reviewer`  | Code + security review (correctness, supply-chain) |
+| `qa`        | Testing, idempotency, dogfooding                   |
+| `releng`    | Versioning, CI/CD, publishing, and documentation   |
 
 These personas are natively discovered by Claude Code, but can also be loaded into AGY/Antigravity using the `load-sdlc-agents` skill. See `agents/README.md` for portability notes.
 

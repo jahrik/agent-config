@@ -7,22 +7,21 @@ self-contained work and **report back — they never commit, push, or open PRs.*
 cold: give each the repo path, branch, and a tight scope. **Vet load-bearing claims against ground
 truth** — a cold agent can misread a guard or claim something "doesn't exist".
 
-Run read-only agents (`architect`, `devrev`, `secrev`) and independent per-repo work in parallel;
+Run read-only agents (`architect`, `reviewer`) and independent per-repo work in parallel;
 background-launch remediation on independent repos while you drive the next. Delegation is a
 judgement call — a one-file fix is faster inline; reach for an agent when a step is sizeable or
 benefits from a dedicated lens. Don't spawn an agent to re-run work the harness already tracks
 (e.g. a backgrounded test run) — wait for it.
 
-| Work                                       | Agent                |
-| ------------------------------------------ | -------------------- |
-| Understand the repo; find DRY/hygiene gaps | `architect`          |
-| Probe upstream for newer pins              | `releng`             |
-| Fix code/tasks; refactor                   | `devlead`/`infraeng` |
-| Lint/CI/release config                     | `releng`             |
-| README + AGENTS.md; keep docs in sync      | `infoarch`           |
-| Pre-PR review (parallel, read-only)        | `devrev` + `secrev`  |
-| Run tests; confirm from actual output      | `qa`                 |
-| Monitor CI, triage failures                | `releng`             |
+| Work                                       | Agent       |
+| ------------------------------------------ | ----------- |
+| Understand the repo; find DRY/hygiene gaps | `architect` |
+| Probe upstream for newer pins              | `releng`    |
+| Fix code/tasks; refactor                   | `devlead`   |
+| Lint/CI/release config; docs               | `releng`    |
+| Pre-PR review (parallel, read-only)        | `reviewer`  |
+| Run tests; confirm from actual output      | `qa`        |
+| Monitor CI, triage failures                | `releng`    |
 
 ## Branch and PR conventions
 
@@ -56,11 +55,11 @@ Poll `gh_run_list` (branch-filtered) → `gh_run_get` until the run concludes; o
 
 ## Deep hygiene pass (propose, don't auto-apply)
 
-`architect` analyses (read-only), `devrev` vets, `devlead`/`infraeng` applies. Minimalism — fewest
+`architect` analyses (read-only), `reviewer` vets, `devlead` applies. Minimalism — fewest
 lines that still read clearly; every task/parameter/variable earns its place; collapse copy-paste
 into loops/helpers; delete dead code, unused vars, commented-out cruft. Apply only **low-risk,
 behavior-preserving** cleanups on the branch; list anything that could change behavior as
-**"Proposed follow-ups"** in the PR body. When cleanup changes the public surface, `infoarch`
+**"Proposed follow-ups"** in the PR body. When cleanup changes the public surface, `releng`
 updates README + AGENTS.md in the same PR.
 
 ## Transient CI failures — re-run, don't debug

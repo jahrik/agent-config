@@ -1,40 +1,36 @@
 # Agent Catalog
 
-Subagent definitions (Claude Code personas) for a simplified-enterprise SDLC. Each is a
-single markdown file with `name` / `description` / `tools` / `model` frontmatter and a
-system-prompt body — the native
-[Claude Code subagent](https://docs.claude.com/en/docs/claude-code/sub-agents) format. The
-[`ansible-ai-agents`](https://github.com/jahrik/ansible-ai-agents) role symlinks this
-directory into `~/.claude/agents/`, where Claude Code auto-discovers them.
+Subagent definitions (Claude Code personas) for a simplified SDLC. Each is a single markdown
+file with `name` / `description` / `tools` / `model` frontmatter and a system-prompt body —
+the native [Claude Code subagent](https://docs.claude.com/en/docs/claude-code/sub-agents)
+format. The [`ansible-ai-agents`](https://github.com/jahrik/ansible-ai-agents) role symlinks
+this directory into `~/.claude/agents/`, where Claude Code auto-discovers them.
 
 The bodies are a **portable base** — persona, mindset, guardrails, and the escalation graph
 with no project-specific tools, registries, or OS baked in. Environment specifics live in
 `AGENTS.md` and the skills, so the same agents work in any project that forks this config.
 
-They follow a simplified-enterprise SDLC: **plan → implement → review → test → secure →
-release**, plus a domain expert and a docs role.
+They follow a simplified SDLC: **plan → implement → review → test → release**.
 
-| Agent       | Stage     | Model  | Purpose                                                       |
-| ----------- | --------- | ------ | ------------------------------------------------------------- |
-| `architect` | Plan      | opus   | Break work into the smallest correct change; pick the pattern |
-| `devlead`   | Implement | sonnet | Write code matching conventions; branch + PR                  |
-| `infraeng`  | Implement | sonnet | Domain expert: infrastructure-as-code, images, deployment     |
-| `devrev`    | Review    | sonnet | Correctness, simplification, efficiency (read-only)           |
-| `qa`        | Test      | sonnet | Test suites, idempotency, lint, dogfooding (read-only)        |
-| `secrev`    | Secure    | opus   | Secrets, supply-chain, platform-security protection           |
-| `releng`    | Release   | sonnet | Semver, changelog, CI/CD, publishing                          |
-| `infoarch`  | Docs      | sonnet | README / AGENTS.md, concise and command-first                 |
+| Agent       | Stage     | Model  | Purpose                                                           |
+| ----------- | --------- | ------ | ----------------------------------------------------------------- |
+| `architect` | Plan      | opus   | Break work into smallest correct change; pick the pattern         |
+| `devlead`   | Implement | sonnet | Code + infra: matching style, skills, branch + PR                 |
+| `reviewer`  | Review    | opus   | Correctness + security review (read-only)                         |
+| `qa`        | Test      | sonnet | Test suites, idempotency, lint, dogfooding (read-only)            |
+| `releng`    | Release   | sonnet | Semver, CI/CD, publishing, and documentation (README / AGENTS.md) |
 
 ## Portability
 
-Subagents are a Claude Code feature — other tools do not natively auto-discover `~/.claude/agents/`. The _content_ (scope / mindset / guardrails) is highly portable. For AGY/Antigravity, the `load-sdlc-agents` skill dynamically reads these files and injects them into the runtime via `define_subagent`. The shared rules also live in the top-level `AGENTS.md`, which other AGENTS.md-aware tools read via their own symlinks.
-To use a role with a different tool, reference the same guidance through that tool's
-instruction file.
+Subagents are a Claude Code feature — other tools do not natively auto-discover
+`~/.claude/agents/`. The _content_ (scope / mindset / guardrails) is highly portable. For
+AGY/Antigravity, the `load-sdlc-agents` skill dynamically reads these files and injects them
+into the runtime via `define_subagent`. The shared rules also live in the top-level
+`AGENTS.md`, which other AGENTS.md-aware tools read via their own symlinks.
 
 ## Conventions
 
 - `name` matches the filename slug.
 - `description` says _when_ to use the agent (used for routing).
-- Reviewer-type agents (`devrev`, `qa`, `secrev`) drop `Edit`/`Write` — they report findings rather
-  than change code. They keep `Bash` for inspection (grep, running tests, `gh`), so "read-only" means
-  no file edits, not a sandbox; the persona body is what keeps them from mutating state.
+- Read-only agents (`reviewer`, `qa`) drop `Edit`/`Write` — they report findings, not change
+  code. They keep `Bash` for inspection, so "read-only" means no file edits, not a sandbox.

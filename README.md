@@ -30,9 +30,9 @@ agent-config/
 ## What's inside
 
 **Agents** (`agents/`) — a simplified SDLC team, deployed to `~/.claude/agents/` (and loadable into AGY/Antigravity via the `load-sdlc-agents` skill):
-`architect` (plan) · `devlead` / `infraeng` (implement) · `devrev` / `qa` / `secrev`
-(review / test / secure) · `releng` (release) · `infoarch` (docs). Each is a portable persona
-with no project-specific tooling baked in.
+`architect` (plan) · `devlead` (implement + infra) · `reviewer` (correctness + security,
+read-only) · `qa` (test) · `releng` (release + docs). Each is a portable persona with no
+project-specific tooling baked in.
 
 **Skills** (`skills/`) — loaded on demand when their `description` matches:
 
