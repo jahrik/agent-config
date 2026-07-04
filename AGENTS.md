@@ -41,6 +41,23 @@ as needed.
 
 ---
 
+## Tool Preferences
+
+The deployment role installs a standard toolchain to `~/.local/bin` — prefer it over improvised
+pipelines:
+
+- **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
+  (syntax-aware) code search.
+- **Data:** `jq` (JSON), `yq` (YAML), `xsv` (CSV), `htmlq` (HTML extraction).
+- **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
+- **Interactive selection:** `fzf` — for the human at the terminal; don't script it in automation.
+- **GitHub:** the `mcp-github` tools only (Hard Rule 8) — never the `gh` CLI.
+- **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
+
+Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
+
+---
+
 ## Repository Conventions
 
 - Repos follow a type prefix the workflow skills key off of:
