@@ -5,54 +5,38 @@ description: How to author a skill in this repo — the SKILL.md format, writing
 
 # Skill Creator
 
-How to add or edit a **skill** — an on-demand knowledge or procedure pack that Claude loads when
-its `description` matches the task. For subagents and global rules, see `agent-config-authoring`.
-
-## When to make a skill
-
-Make a skill when you keep re-explaining the same reference knowledge or repeatable procedure.
-If it's a _persona_ with a stance and tool scope, that's a subagent. If it's a short, universal
-directive, that's a rule in `AGENTS.md`.
+How to add or edit a **skill** — an on-demand knowledge or procedure pack loaded when its
+`description` matches the task. Make one when you keep re-explaining the same reference knowledge
+or procedure. A _persona_ with a stance and tool scope is a subagent; a short universal directive
+is an `AGENTS.md` rule (both: see `agent-config-authoring`).
 
 ## Format
 
-Create `skills/<slug>/SKILL.md`:
+`skills/<slug>/SKILL.md` with frontmatter `name:` (must match the directory slug) and
+`description:`:
 
-```markdown
----
-name: <slug>
-description: <one line — what it is AND when to use it; this is the routing trigger>
----
-
-# <Title>
-
-## <Sections with the actual content>
-```
-
-- `name` matches the directory slug.
-- Extra files (templates, references, scripts) can live in the skill directory; link to them from
-  `SKILL.md` so they load only when needed.
+- **`SKILL.md`** — the router: when to use, core rules, key commands. **≤ ~2KB** (lint-enforced);
+  it loads whole on every invoke.
+- **`references/*.md`** — deep detail (templates, checklists, examples), linked from SKILL.md so
+  it loads only when needed.
+- **`scripts/*`** — executable steps; one reviewed script beats re-derived pipelines
+  (`#!/usr/bin/env bash` + `set -euo pipefail`, or Python).
 
 ## The description is the trigger
 
-The `description` is the **only part always in context** — it's what Claude matches to decide
-whether to load the skill. Treat it as the most important line:
+The `description` is the **only part always in context** — it decides whether the skill loads:
 
-- Front-load the keywords that should activate it; name the _task_, not just the topic.
-- Say _when to use it_ ("Use when …"), not only what it is.
-- One line, ≤ ~25 words.
-- After writing it, **verify it triggers**: in a fresh session, describe the task in your own
-  words and confirm Claude reaches for the skill. If it doesn't fire, rewrite the description with
-  the words you actually used — tune the trigger, not the body.
+- Front-load activating keywords; name the _task_, not just the topic.
+- Say _when to use it_ ("Use when …"); one line, ≤ ~25 words.
+- **Verify it triggers**: in a fresh session, describe the task in your own words and confirm the
+  skill fires; if not, rewrite the description with the words you used — tune the trigger, not
+  the body.
 
-## Body
+## Body rules
 
-- Lead with what a reader needs to _do_; commands and templates over prose.
-- Keep it ≤ ~500 lines. If it grows past that, split detail into sibling files the `SKILL.md`
-  links to, so the body stays scannable.
-- **Portable base rule:** no account names, registries, OS, or local paths — say "the project's
-  conventions" / "the project's environment (`AGENTS.md`)". Machine specifics live in each repo's
-  `AGENTS.md`, not in the skill.
+Lead with what a reader needs to _do_; commands and templates over prose. **Portable base rule:**
+no account names, registries, OS, or local paths — say "the project's conventions" / "the
+project's environment (`AGENTS.md`)".
 
 ## Validate and register
 
@@ -60,11 +44,7 @@ whether to load the skill. Treat it as the most important line:
 uvx pre-commit run --all-files   # secret scan + prettier + lint-config
 ```
 
-Then register the skill in `AGENTS.md` (Skills list) and the `README.md` structure block.
-The `lint-config` hook enforces this — it fails if the skill's frontmatter `name` doesn't
-match its directory or the skill is missing from either catalog.
-
-## Deployment
-
-The `ansible-ai-agents` role symlinks `skills/` into each tool (Claude Code `~/.claude/skills`,
-AGY `~/.gemini/config/skills`), where it is auto-discovered by description.
+Register the skill in `AGENTS.md` (Skills list) and the `README.md` structure block — the
+`lint-config` hook fails on missing registration, a name/slug mismatch, an over-budget SKILL.md,
+or a broken `references/`/`scripts/` link. Deployment: the `ansible-ai-agents` role symlinks
+`skills/` into each tool.
