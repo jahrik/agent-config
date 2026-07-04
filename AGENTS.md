@@ -50,6 +50,27 @@ as needed.
 
 ---
 
+## Tool Preferences
+
+The deployment role installs a standard toolchain to `~/.local/bin` — prefer it over improvised
+pipelines:
+
+- **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
+  (syntax-aware) code search; `tokei` for instant repo language/size stats.
+- **Data:** `jq` (JSON), `yq` (YAML), `xsv` (CSV), `htmlq` (HTML extraction), `gron` to flatten
+  JSON into greppable lines when the structure is unknown, `jc` to turn classic command output
+  (`ps`, `df`, `ip`, …) into JSON, `duckdb` for SQL over large CSV/JSON instead of reading it.
+- **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
+- **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
+  (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
+- **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
+- **GitHub:** the `mcp-github` tools only (Hard Rule 8) — never the `gh` CLI.
+- **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
+
+Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
+
+---
+
 ## Repository Conventions
 
 - Repos follow a type prefix the workflow skills key off of:
