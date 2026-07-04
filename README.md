@@ -42,7 +42,7 @@ with no project-specific tooling baked in.
 - **Workflow:** `update-repo` — repo maintenance for `ansible-*`, `docker-*`, `arm-*`, Go, and
   Python repos (per-type checklists in `references/`)
 
-**Rules** (`AGENTS.md`) — always-loaded global rules and conventions. It's a **portable base**:
+**Rules** (`AGENTS.md`) — always-loaded global rules and conventions (including Tool Preferences). It's a **portable base**:
 machine- and account-specific detail belongs in each repo's own `AGENTS.md`, not here.
 
 ## Using with ansible-ai-agents

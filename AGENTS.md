@@ -31,6 +31,15 @@ as needed.
 
 ---
 
+## Tool Preferences
+
+- **Search / Inspect:** Prefer `rg`, `fd`, `jq`, `yq`, `bat`, `ast-grep`, `xsv`, and `htmlq` over basic POSIX tools when available.
+- **Diff:** Use `delta` for readable diffs.
+- **GitHub Ops:** Never use the `gh` CLI. All GitHub operations must go through `mcp-github` tools (`gh_*`).
+- **Sync:** Use `repo-sync` for cross-repo cloning and status checking.
+
+---
+
 ## Code Style Preferences
 
 - **Python:** `ruff format` (Black-compatible) + `ruff` linting, type hints preferred
