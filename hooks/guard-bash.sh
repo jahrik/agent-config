@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# PreToolUse guard for the Bash tool — mechanical backing for the Hard Rules.
+# PreToolUse guard for shell commands — mechanical backing for the Hard Rules.
 #
 # Source: https://github.com/jahrik/agent-config (hooks/guard-bash.sh);
 # registered into agent settings by the ansible-ai-agents role.
 #
-# Blocks (exit 2, reason on stderr — fed back to the agent):
+# Blocks:
 #   1. `gh` invoked as a command word anywhere in the command line, including
 #      inside compound commands (`cd x && gh pr merge`), pipes, and command
 #      substitution. Closes the gap in the `Bash(gh:*)` permission deny, which
@@ -12,18 +12,18 @@
 #      mcp-github tools; `gh` is the human's own session (Hard Rule 7).
 #   2. `git push` targeting main/master, by branch arg or refspec (Hard Rule 5).
 #
-# Contract (Claude Code hooks): JSON on stdin with .tool_input.command;
-# exit 0 = allow, exit 2 = block. AGY hooks call this the same way.
+# Speaks both hook contracts:
+#   - Claude Code: stdin JSON with .tool_input.command;
+#     exit 0 = allow, exit 2 = block (reason on stderr).
+#   - AGY/Antigravity: stdin JSON with .toolCall.args.CommandLine;
+#     stdout {} = no opinion, {"decision":"deny","reason":...} = block.
 #
 # Self-test: guard-bash.sh --test
 set -euo pipefail
 
-block() {
-  echo "BLOCKED by guard-bash hook: $1" >&2
-  exit 2
-}
+REASON=""
 
-check() {
+check() { # sets REASON and returns 1 when the command must be blocked
   local cmd=$1 stripped
   # Drop quoted strings so text arguments (rg 'gh pr', commit messages) can't
   # false-positive; command words are never quoted.
@@ -34,21 +34,23 @@ check() {
   local seg='(^|[;&|`(]|\$\()[[:space:]]*'
   local wrap='(^|[[:space:]])(env|exec|command|xargs|nohup|timeout [0-9smh]+)[[:space:]]+([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
   if grep -qE "${seg}gh([[:space:]]|\$)|${wrap}gh([[:space:]]|\$)" <<<"$stripped"; then
-    block "the gh CLI is the human's session — use the mcp-github (gh_*) tools; missing capability => open an issue on jahrik/mcp-servers (Hard Rule 7)"
+    REASON="the gh CLI is the human's session — use the mcp-github (gh_*) tools; missing capability => open an issue on jahrik/mcp-servers (Hard Rule 7)"
+    return 1
   fi
 
   # git push to main/master: bare branch arg, remote+branch, or refspec :main.
   if grep -qE "${seg}git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+push([[:space:]]+[^;&|]*)?([[:space:]]|:)(main|master)([[:space:]]|\$)" <<<"$stripped"; then
-    block "never push to main/master — branch and open a PR; the maintainer merges (Hard Rule 5)"
+    REASON="never push to main/master — branch and open a PR; the maintainer merges (Hard Rule 5)"
+    return 1
   fi
   return 0
 }
 
 self_test() {
-  local pass=0 fail=0
+  local self=${BASH_SOURCE[0]} pass=0 fail=0
   expect() { # expect <allow|block> <command...>
     local want=$1 cmd=$2 got=allow
-    (check "$cmd") 2>/dev/null || got=block
+    check "$cmd" || got=block
     if [[ $got == "$want" ]]; then
       pass=$((pass + 1))
     else
@@ -81,6 +83,25 @@ self_test() {
   expect allow 'git push origin fix/main-menu'
   expect allow 'git checkout main'
   expect allow 'git pull origin main'
+
+  # full-contract round trips
+  local rc=0 out
+  echo '{"tool_input":{"command":"gh pr list"}}' | "$self" 2>/dev/null || rc=$?
+  if [[ $rc -eq 2 ]]; then pass=$((pass + 1)); else
+    fail=$((fail + 1))
+    echo "FAIL: Claude contract expected exit 2, got $rc" >&2
+  fi
+  out=$(echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"gh pr list"}}}' | "$self")
+  if [[ $(jq -r '.decision' <<<"$out") == "deny" ]]; then pass=$((pass + 1)); else
+    fail=$((fail + 1))
+    echo "FAIL: AGY contract expected decision=deny, got: $out" >&2
+  fi
+  out=$(echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls"}}}' | "$self")
+  if [[ $out == "{}" ]]; then pass=$((pass + 1)); else
+    fail=$((fail + 1))
+    echo "FAIL: AGY contract expected {} for allow, got: $out" >&2
+  fi
+
   echo "guard-bash self-test: $pass passed, $fail failed"
   [[ $fail -eq 0 ]]
 }
@@ -90,6 +111,22 @@ if [[ ${1:-} == "--test" ]]; then
   exit $?
 fi
 
-command=$(jq -r '.tool_input.command // empty' 2>/dev/null || true)
+input=$(cat)
+command=$(jq -r '.tool_input.command // .toolCall.args.CommandLine // empty' <<<"$input" 2>/dev/null || true)
+
+if jq -e '.toolCall' <<<"$input" >/dev/null 2>&1; then
+  # AGY contract: JSON verdict on stdout, always exit 0.
+  if [[ -z $command ]] || check "$command"; then
+    echo '{}'
+  else
+    jq -cn --arg reason "$REASON" '{decision: "deny", reason: $reason}'
+  fi
+  exit 0
+fi
+
+# Claude Code contract: exit 2 blocks, reason on stderr.
 [[ -z $command ]] && exit 0
-check "$command"
+if ! check "$command"; then
+  echo "BLOCKED by guard-bash hook: $REASON" >&2
+  exit 2
+fi
