@@ -36,6 +36,9 @@ make local    # docker-compose up (dev)
   previously-pushed registry tags.
 - Support `amd64` and `arm64` where relevant (use buildx).
 - Lint Dockerfiles with `hadolint`.
+- Shell (entrypoints, scripts): `#!/usr/bin/env bash` + `set -euo pipefail`; lint with
+  `shellcheck`, format with `shfmt`.
+- YAML (compose/stack files): 2-space indent; quote strings that could be misread.
 
 ## Swarm Deployment
 
