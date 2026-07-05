@@ -31,15 +31,6 @@ as needed.
 
 ---
 
-## Tool Preferences
-
-- **Search / Inspect:** Prefer `rg`, `fd`, `jq`, `yq`, `bat`, `ast-grep`, `xsv`, and `htmlq` over basic POSIX tools when available.
-- **Diff:** Use `delta` for readable diffs.
-- **GitHub Ops:** Never use the `gh` CLI. All GitHub operations must go through `mcp-github` tools (`gh_*`).
-- **Sync:** Use `repo-sync` for cross-repo cloning and status checking.
-
----
-
 ## Code Style Preferences
 
 - **Python:** `ruff format` (Black-compatible) + `ruff` linting, type hints preferred
@@ -65,6 +56,10 @@ pipelines:
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
 - **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
 - **GitHub:** the `mcp-github` tools only (Hard Rule 8) — never the `gh` CLI.
+- **Workspace state:** the `ws_*` MCP tools (read-only `mcp-workspace` server) over ad-hoc
+  git/ls loops — `ws_status` (`attention_only: true`) first, `ws_branches` for cleanup
+  questions, `ws_repo` for one repo. Report all findings; cleanup is a separate,
+  deliberate action.
 - **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
 
 Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
