@@ -75,9 +75,6 @@ pipelines:
   git/ls loops — `ws_status` (`attention_only: true`) first, `ws_branches` for cleanup
   questions, `ws_repo` for one repo. Cleanup is a separate, deliberate action.
 - **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
-- **Molecule:** `mtest` when it exists on the machine — it wires up the container backend and
-  clears the stale role cache; don't hand-assemble env preambles. (Repo READMEs document plain
-  `molecule` for portability.)
 - **Idempotency:** prefer commands and patterns that can safely re-run.
 
 Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
