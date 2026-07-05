@@ -37,6 +37,9 @@ pyproject.toml, uv.lock, requirements.yml, .ansible-lint, .yamllint
   command/shell; pinned `version:` on every git task.
 - YAML style: 2-space indent; quote any string that could be misread (`"true"`, versions, modes).
 
+Run molecule via `scripts/mtest.sh` — it wires podman up as the Docker backend when needed,
+clears the stale role cache, and prefers the repo's pinned toolchain (`uv run`).
+
 Full YAML shapes (task flow, meta, molecule scenarios, verify, CI jobs, lint configs, gotchas):
 `references/role-patterns.md`. Repo-by-repo modernization procedure + current pins: the
 `update-repo` skill.

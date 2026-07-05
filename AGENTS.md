@@ -23,8 +23,8 @@ skills, per-repo docs, and tool schemas, loaded on demand.
 6. **Attribute commits** with a `Co-Authored-By:` trailer for the AI model used.
 7. **Never use the `gh` CLI.** GitHub operations go through the `mcp-github` MCP tools (`gh_*`);
    agents act as the GitHub App identity, `gh` is the human's own session (a permission deny rule
-   backs this). If a capability is missing, open an issue on `jahrik/mcp-servers` and hand the
-   action to the maintainer.
+   and the `hooks/guard-bash.sh` PreToolUse hook back this). If a capability is missing, open an
+   issue on `jahrik/mcp-servers` and hand the action to the maintainer.
 8. **Report all findings.** In any sweep, survey, or review, surface everything found — never
    silently filter or suppress items. The maintainer decides what to act on.
 
@@ -35,8 +35,8 @@ skills, per-repo docs, and tool schemas, loaded on demand.
 The harness is three repos:
 
 - **[`jahrik/agent-config`](https://github.com/jahrik/agent-config)** (this repo) — this file,
-  `skills/`, and `agents/` personas. Deployed by cloning to `~/.config/agents` and symlinking
-  into `~/.claude/` and `~/.gemini/config/`.
+  `skills/`, `agents/` personas, and `hooks/` guard scripts. Deployed by cloning to
+  `~/.config/agents` and symlinking into `~/.claude/` and `~/.gemini/config/`.
 - **[`jahrik/ansible-ai-agents`](https://github.com/jahrik/ansible-ai-agents)** — deploys the
   whole harness: agent CLIs, the pinned toolchain in `~/.local/bin`, this config, MCP server
   registration, and GitHub App credentials.
@@ -62,9 +62,10 @@ pipelines:
 
 - **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
   (syntax-aware) code search; `tokei` for instant repo language/size stats.
-- **Data:** `jq` (JSON), `yq` (YAML), `xsv` (CSV), `htmlq` (HTML extraction), `gron` to flatten
-  JSON into greppable lines when the structure is unknown, `jc` to turn classic command output
-  (`ps`, `df`, `ip`, …) into JSON, `duckdb` for SQL over large CSV/JSON instead of reading it.
+- **Data:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when the
+  structure is unknown; for bulk data wrangling as it arises: `duckdb` (SQL over large
+  CSV/JSON/JSONL instead of reading it), `xsv` (CSV), `htmlq` (HTML), `jc` (classic command
+  output → JSON).
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
