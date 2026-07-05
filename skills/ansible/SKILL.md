@@ -35,6 +35,7 @@ pyproject.toml, uv.lock, requirements.yml, .ansible-lint, .yamllint
 - `verify.yml` makes real assertions — never `assert: that: true`.
 - Lint: `.ansible-lint` `profile: production`; FQCN everywhere; `changed_when:` on every
   command/shell; pinned `version:` on every git task.
+- YAML style: 2-space indent; quote any string that could be misread (`"true"`, versions, modes).
 
 Full YAML shapes (task flow, meta, molecule scenarios, verify, CI jobs, lint configs, gotchas):
 `references/role-patterns.md`. Repo-by-repo modernization procedure + current pins: the

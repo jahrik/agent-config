@@ -7,8 +7,9 @@ enforced here mechanically rather than by vigilance. Checks:
   - every skill's frontmatter `name:` matches its directory slug
   - every agent's frontmatter `name:` matches its filename slug
   - every skill and agent has a non-empty `description:`
-  - every skill is registered in AGENTS.md and README.md
-  - every agent is registered in AGENTS.md and agents/README.md
+  - every skill is registered in README.md (AGENTS.md carries no catalogs —
+    the harness lists skills/agents live; README.md is the human catalog)
+  - every agent is registered in agents/README.md
   - every SKILL.md fits the on-invoke context budget (warn > ~2KB, fail > 2.5KB;
     `references/` and `scripts/` are exempt — they load on demand)
   - every `references/...` / `scripts/...` path a skill mentions actually exists
@@ -77,7 +78,6 @@ def check_description(label: str, fields: dict[str, str]) -> None:
 
 
 def main() -> int:
-    agents_md = (REPO / "AGENTS.md").read_text(encoding="utf-8")
     root_readme = (REPO / "README.md").read_text(encoding="utf-8")
     agents_readme = (AGENTS / "README.md").read_text(encoding="utf-8")
 
@@ -92,8 +92,6 @@ def main() -> int:
         if fields.get("name") != slug:
             err(f"{label}: frontmatter name={fields.get('name')!r} != directory {slug!r}")
         check_description(label, fields)
-        if f"skills/{slug}/" not in agents_md:
-            err(f"{label}: not registered in AGENTS.md Skills list (`skills/{slug}/`)")
         if f"{slug}/" not in root_readme:
             err(f"{label}: not registered in README.md structure block")
 
@@ -123,8 +121,6 @@ def main() -> int:
         if fields.get("name") != slug:
             err(f"{label}: frontmatter name={fields.get('name')!r} != filename {slug!r}")
         check_description(label, fields)
-        if f"`{slug}`" not in agents_md:
-            err(f"{label}: not registered in AGENTS.md Agents table")
         if f"`{slug}`" not in agents_readme:
             err(f"{label}: not registered in agents/README.md table")
 
