@@ -63,9 +63,12 @@ pipelines:
 - **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
   (syntax-aware) code search; `tokei` for instant repo language/size stats.
 - **Data:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when the
-  structure is unknown; for bulk data wrangling as it arises: `duckdb` (SQL over large
-  CSV/JSON/JSONL instead of reading it), `xsv` (CSV), `htmlq` (HTML), `jc` (classic command
-  output → JSON).
+  structure is unknown; for bulk data wrangling as it arises: `xsv` (CSV), `htmlq` (HTML),
+  `jc` (classic command output → JSON).
+- **Big local data:** the `duckdb_*` MCP tools (`data` server) — SQL over large
+  CSV/JSON/JSONL/Parquet files in place instead of reading them into context, and scratch
+  tables that persist across calls for intermediate results. `duckdb_describe` first on an
+  unfamiliar file. Prefer them over the raw `duckdb` CLI (row/char limits protect context).
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
