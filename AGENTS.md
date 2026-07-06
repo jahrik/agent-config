@@ -65,11 +65,8 @@ pipelines:
 - **Data:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when the
   structure is unknown; for bulk data wrangling as it arises: `xsv` (CSV), `htmlq` (HTML),
   `jc` (classic command output → JSON).
-- **Big local data:** the `duckdb_*` MCP tools (`data` server) — SQL over large
-  CSV/JSON/JSONL/Parquet files in place instead of reading them into context, and scratch
-  tables that persist across calls for intermediate results. `duckdb_describe` first on an
-  unfamiliar file. Prefer them over the raw `duckdb` CLI (row/char limits protect context).
-  **CRITICAL FOR API OUTPUTS**: When fetching large JSON payloads (e.g. from GitHub via `gh_api_get`), let the MCP framework dump the output to a local file (or write it yourself) and then analyze it directly via DuckDB `read_json_auto('/path/to/file')`. This bypasses your context limit entirely and saves massive token costs.
+- **Big local data & API Payloads:** the `duckdb_*` MCP tools (`data` server). Always prefer the `data` MCP server for ANY large data jobs, logs, CSVs, JSON, JSONL, or Parquet files. Use SQL in place instead of reading large datasets into context.
+  **CRITICAL FOR API OUTPUTS**: When fetching large payloads (e.g. from GitHub via `gh_api_get`), let the MCP framework dump the output to a local file and then analyze it directly via the `data` MCP server (e.g. `duckdb_query` with `read_json_auto('/path/to/file')`). This explicitly bypasses your context limit entirely and saves massive token costs. Prefer this workflow for any large dataset or analytics task.
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
