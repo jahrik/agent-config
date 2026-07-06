@@ -21,6 +21,10 @@
 # Self-test: guard-bash.sh --test
 set -euo pipefail
 
+# Ensure standard local and system search paths are in PATH
+LOCAL_BIN=~/.local/bin
+export PATH="${LOCAL_BIN}:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
+
 REASON=""
 
 check() { # sets REASON and returns 1 when the command must be blocked
