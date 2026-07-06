@@ -16,7 +16,7 @@
 #   - Claude Code: stdin JSON with .tool_input.command;
 #     exit 0 = allow, exit 2 = block (reason on stderr).
 #   - AGY/Antigravity: stdin JSON with .toolCall.args.CommandLine;
-#     stdout {} = no opinion, {"decision":"deny","reason":...} = block.
+#     stdout {"decision":"allow"} = allow, {"decision":"deny","reason":...} = block.
 #
 # Self-test: guard-bash.sh --test
 set -euo pipefail
@@ -101,9 +101,9 @@ self_test() {
     echo "FAIL: AGY contract expected decision=deny, got: $out" >&2
   fi
   out=$(echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"ls"}}}' | "$self")
-  if [[ $out == "{}" ]]; then pass=$((pass + 1)); else
+  if [[ $(jq -r '.decision' <<<"$out") == "allow" ]]; then pass=$((pass + 1)); else
     fail=$((fail + 1))
-    echo "FAIL: AGY contract expected {} for allow, got: $out" >&2
+    echo "FAIL: AGY contract expected decision=allow for allow, got: $out" >&2
   fi
 
   echo "guard-bash self-test: $pass passed, $fail failed"
@@ -121,7 +121,7 @@ command=$(jq -r '.tool_input.command // .toolCall.args.CommandLine // empty' <<<
 if jq -e '.toolCall' <<<"$input" >/dev/null 2>&1; then
   # AGY contract: JSON verdict on stdout, always exit 0.
   if [[ -z $command ]] || check "$command"; then
-    echo '{}'
+    echo '{"decision":"allow"}'
   else
     jq -cn --arg reason "$REASON" '{decision: "deny", reason: $reason}'
   fi
