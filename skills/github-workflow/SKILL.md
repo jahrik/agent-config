@@ -1,6 +1,6 @@
 ---
 name: github-workflow
-description: The branch → commit → PR → review → merge flow on GitHub — conventional commits with attribution, one PR per unit of work, monitoring CI, and resolving review threads. Use when committing, opening a PR, or handling review feedback.
+description: The branch → commit → PR → review → merge flow on GitHub via mcp-github. Use when committing, opening a PR, monitoring CI, or handling review feedback.
 ---
 
 # GitHub Workflow
@@ -31,14 +31,15 @@ git checkout -b <type>-<short-topic>      # e.g. fix-login-retry
 `git push -u origin <branch>`, then `gh_pr_create` — title mirrors the commit convention; body is
 a bullet list of changes + a **test plan** checklist. Never a second PR for follow-up fixes; push
 them to the same branch and the open PR picks them up. After opening the PR, use
-`gh_pr_request_reviewers` to request a review from `@copilot` and the maintainer, then set an
-adjustable timer based on experience to wait for the review.
+`gh_pr_request_reviewers` to request Copilot and the maintainer, then set an adjustable timer to
+wait for the review. Copilot's login is `Copilot` — the `[bot]` app slug is silently dropped by
+GitHub, and the tool warns if a reviewer didn't take.
 
 ## Monitor CI
 
 `gh_pr_checks` / `gh_run_list` → `gh_run_get` until the run concludes; `gh_run_failed_logs` on
 failure. Fix locally, re-run checks, push. Never dismiss a failure as "transient" without
-evidence. (Workflow rerun has no tool yet — issue + maintainer.)
+evidence. Re-run a flaky run with `gh_run_rerun` (`failed_only` to retry just the failed jobs).
 
 ## Handle review feedback
 
