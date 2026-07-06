@@ -30,7 +30,9 @@ git checkout -b <type>-<short-topic>      # e.g. fix-login-retry
 
 `git push -u origin <branch>`, then `gh_pr_create` — title mirrors the commit convention; body is
 a bullet list of changes + a **test plan** checklist. Never a second PR for follow-up fixes; push
-them to the same branch and the open PR picks them up.
+them to the same branch and the open PR picks them up. After opening the PR, use
+`gh_pr_request_reviewers` to request a review from `@copilot` and the maintainer, then set an
+adjustable timer based on experience to wait for the review.
 
 ## Monitor CI
 
@@ -40,9 +42,11 @@ evidence. (Workflow rerun has no tool yet — issue + maintainer.)
 
 ## Handle review feedback
 
-Request an automated review if the repo has one (`gh_pr_comment` with `@copilot review`). Per
-comment: apply the fix, or reply with rationale — then **reply and resolve the thread** so the PR
-ends clean: `gh_review_threads_get` → `gh_review_comment_reply` → `gh_review_thread_resolve`.
+Wait for the review timer to finish or for a notification. Read review comments using
+`gh_review_comments_list` and `gh_review_threads_get`. Per comment: apply the fix, push
+the changes to the PR branch, and reply to the thread (`gh_review_comment_reply`) with your
+rationale. Repeat this cycle of fixing, pushing, and replying until a clean review is
+reached. Finally, resolve the thread: `gh_review_thread_resolve` so the PR ends clean.
 
 ## Merge
 
