@@ -32,8 +32,9 @@ git checkout -b <type>-<short-topic>      # e.g. fix-login-retry
 a bullet list of changes + a **test plan** checklist. Never a second PR for follow-up fixes; push
 them to the same branch and the open PR picks them up. After opening the PR, use
 `gh_pr_request_reviewers` to request Copilot and the maintainer, then set an adjustable timer to
-wait for the review. Copilot's login is `Copilot` — the `[bot]` app slug is silently dropped by
-GitHub, and the tool warns if a reviewer didn't take.
+wait for the review. (Optional: load `reviewer` via `load-sdlc-agents` for an adversarial review).
+Copilot's login is `Copilot` (the `[bot]` app slug is silently dropped by
+GitHub) and the tool warns if a reviewer didn't take.
 
 ## Monitor CI
 
@@ -43,11 +44,7 @@ evidence. Re-run a flaky run with `gh_run_rerun` (`failed_only` to retry just th
 
 ## Handle review feedback
 
-Wait for the review timer to finish or for a notification. Read review comments using
-`gh_review_comments_list` and `gh_review_threads_get`. Per comment: apply the fix, push
-the changes to the PR branch, and reply to the thread (`gh_review_comment_reply`) with your
-rationale. Repeat this cycle of fixing, pushing, and replying until a clean review is
-reached. Finally, resolve the thread: `gh_review_thread_resolve` so the PR ends clean.
+Read review comments using `gh_review_comments_list` and `gh_review_threads_get`. Per comment: apply the fix, push to the branch, and reply (`gh_review_comment_reply`) with your rationale. Repeat this cycle until a clean review is reached. Finally, resolve threads with `gh_review_thread_resolve` so the PR ends clean.
 
 ## Merge
 
