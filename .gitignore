@@ -9,6 +9,12 @@ secrets/
 .secrets.baseline
 private/
 
+# Runtime state — this repo is cloned to ~/.config/agents, where MCP servers
+# may drop SQLite DBs. Never track them; the dispatcher DB belongs in ~/.mcp.
+*.db
+*.sqlite
+*.sqlite3
+
 # OS
 .DS_Store
 Thumbs.db
