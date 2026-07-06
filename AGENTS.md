@@ -69,6 +69,7 @@ pipelines:
   CSV/JSON/JSONL/Parquet files in place instead of reading them into context, and scratch
   tables that persist across calls for intermediate results. `duckdb_describe` first on an
   unfamiliar file. Prefer them over the raw `duckdb` CLI (row/char limits protect context).
+  **CRITICAL FOR API OUTPUTS**: When fetching large JSON payloads (e.g. from GitHub via `gh_api_get`), let the MCP framework dump the output to a local file (or write it yourself) and then analyze it directly via DuckDB `read_json_auto('/path/to/file')`. This bypasses your context limit entirely and saves massive token costs.
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
