@@ -62,6 +62,15 @@ pipelines:
 
 - **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
   (syntax-aware) code search; `tokei` for instant repo language/size stats.
+- **Code navigation (semantic):** the `lsp_*` MCP tools (`lsp` server, language-server-backed)
+  are the IDE-grade path — reach for them over `rg`/`ast-grep` whenever the question is about
+  _meaning_ rather than text: go-to-definition (`lsp_definition`), find-references
+  (`lsp_references`), call hierarchy (`lsp_call_hierarchy`), type/implementation
+  (`lsp_type_definition`/`lsp_implementation`), symbol search (`lsp_workspace_symbols`),
+  diagnostics (`lsp_diagnostics`), and rename refactors (`lsp_rename`, over `sd`/`sed`). They
+  resolve imports and scope, so they exclude same-named text and catch uses `rg` misses. Split:
+  `rg` = text/pattern, `ast-grep` = syntax structure, `lsp_*` = what a symbol _means_ and connects
+  to. Pass absolute paths.
 - **Data:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when the
   structure is unknown; for bulk data wrangling as it arises: `xsv` (CSV), `htmlq` (HTML),
   `jc` (classic command output → JSON).
