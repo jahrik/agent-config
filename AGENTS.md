@@ -60,22 +60,23 @@ Finding things at runtime:
 The deployment role installs a standard toolchain to `~/.local/bin` — prefer it over improvised
 pipelines:
 
-- **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
-  (syntax-aware) code search; `tokei` for instant repo language/size stats.
+- **Search:** `rg` over grep/find loops; `fd` for finding files; `tokei` for instant repo
+  language/size stats.
 - **Code navigation (semantic):** the `lsp_*` MCP tools (`lsp` server, language-server-backed)
-  are the IDE-grade path — reach for them over `rg`/`ast-grep` whenever the question is about
+  are the IDE-grade path — reach for them over `rg` whenever the question is about
   _meaning_ rather than text: go-to-definition (`lsp_definition`), find-references
   (`lsp_references`), call hierarchy (`lsp_call_hierarchy`), type/implementation
   (`lsp_type_definition`/`lsp_implementation`), symbol search (`lsp_workspace_symbols`),
   diagnostics (`lsp_diagnostics`), and rename refactors (`lsp_rename`, over `sd`/`sed`). They
   resolve imports and scope, so they exclude same-named text and catch uses `rg` misses. Split:
-  `rg` = text/pattern, `ast-grep` = syntax structure, `lsp_*` = what a symbol _means_ and connects
-  to. Pass absolute paths.
-- **Data:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when the
-  structure is unknown; for bulk data wrangling as it arises: `xsv` (CSV), `htmlq` (HTML),
-  `jc` (classic command output → JSON).
-- **Big local data & API Payloads:** the `duckdb_*` MCP tools (`data` server). Always prefer the `data` MCP server for ANY large data jobs, logs, CSVs, JSON, JSONL, or Parquet files. Use SQL in place instead of reading large datasets into context.
-  **CRITICAL FOR API OUTPUTS**: When fetching large payloads (e.g. from GitHub via `gh_api_get`), let the MCP framework dump the output to a local file and then analyze it directly via the `data` MCP server (e.g. `duckdb_query` with `read_json_auto('/path/to/file')`). This explicitly bypasses your context limit entirely and saves massive token costs. Prefer this workflow for any large dataset or analytics task.
+  `rg` = text/pattern, the `lsp` server's tree-sitter tools (`ts_query`/`ts_extract`) = syntax
+  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths.
+- **Data wrangling:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when
+  the structure is unknown.
+- **Large data & API payloads:** the `data` MCP server (`duckdb_*` tools) — run SQL in place over
+  big files, logs, CSV/JSON/JSONL/Parquet instead of reading them into context. For large API
+  responses (e.g. `gh_api_get`), let the framework dump to a file, then query it with
+  `read_json_auto('…')` — bypasses the context window entirely.
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
@@ -85,6 +86,8 @@ pipelines:
   git/ls loops — `ws_status` (`attention_only: true`) first, `ws_branches` for cleanup
   questions, `ws_repo` for one repo. Cleanup is a separate, deliberate action.
 - **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
+- **Async delegation:** the `dispatcher` MCP server to spawn and track background agent jobs
+  instead of blocking on a long sub-task.
 - **Idempotency:** prefer commands and patterns that can safely re-run.
 
 Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
