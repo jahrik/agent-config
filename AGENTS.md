@@ -70,7 +70,9 @@ pipelines:
   diagnostics (`lsp_diagnostics`), and rename refactors (`lsp_rename`, over `sd`/`sed`). They
   resolve imports and scope, so they exclude same-named text and catch uses `rg` misses. Split:
   `rg` = text/pattern, the `lsp` server's tree-sitter tools (`ts_query`/`ts_extract`) = syntax
-  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths.
+  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths. Before `rg`-ing
+  a bare symbol name to find where it is defined or used, call `lsp_definition`/`lsp_references`
+  instead; drop to `rg` only for text that is not a symbol (log strings, comments, config keys).
 - **Data wrangling:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when
   the structure is unknown.
 - **Large data & API payloads:** the `data` MCP server (`duckdb_*` tools) — run SQL in place over
