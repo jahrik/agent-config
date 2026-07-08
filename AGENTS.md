@@ -84,9 +84,7 @@ pipelines:
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip. Before
-  committing, lint and format everything you changed with the tools for that language (the ones
-  here for shell/Docker/workflows; the language's reference skill — `go`, `python`, `ansible` —
-  names the rest); don't push and let CI find it.
+  committing, lint and format everything you changed; don't push and let CI find it.
 - **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
 - **GitHub:** the `mcp-github` tools only (Hard Rule 7) — never the `gh` CLI.
 - **Workspace state:** the `ws_*` MCP tools (read-only `mcp-workspace` server) over ad-hoc
