@@ -60,24 +60,23 @@ Finding things at runtime:
 The deployment role installs a standard toolchain to `~/.local/bin` — prefer it over improvised
 pipelines:
 
-- **Search:** `rg` over grep/find loops; `fd` for finding files; `ast-grep` for structural
-  (syntax-aware) code search; `tokei` for instant repo language/size stats.
+- **Search:** `rg` over grep/find loops; `fd` for finding files; `tokei` for instant repo
+  language/size stats.
 - **Code navigation (semantic):** the `lsp_*` MCP tools (`lsp` server, language-server-backed)
-  are the IDE-grade path — reach for them over `rg`/`ast-grep` whenever the question is about
+  are the IDE-grade path — reach for them over `rg` whenever the question is about
   _meaning_ rather than text: go-to-definition (`lsp_definition`), find-references
   (`lsp_references`), call hierarchy (`lsp_call_hierarchy`), type/implementation
   (`lsp_type_definition`/`lsp_implementation`), symbol search (`lsp_workspace_symbols`),
   diagnostics (`lsp_diagnostics`), and rename refactors (`lsp_rename`, over `sd`/`sed`). They
   resolve imports and scope, so they exclude same-named text and catch uses `rg` misses. Split:
-  `rg` = text/pattern, `ast-grep` = syntax structure, `lsp_*` = what a symbol _means_ and connects
-  to. Pass absolute paths.
+  `rg` = text/pattern, the `lsp` server's tree-sitter tools (`ts_query`/`ts_extract`) = syntax
+  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths.
 - **Data wrangling:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when
-  the structure is unknown; `xsv` (CSV), `htmlq` (HTML), `jc` (classic command output → JSON) as
-  they arise.
+  the structure is unknown.
 - **Large data & API payloads:** the `data` MCP server (`duckdb_*` tools) — run SQL in place over
   big files, logs, CSV/JSON/JSONL/Parquet instead of reading them into context. For large API
   responses (e.g. `gh_api_get`), let the framework dump to a file, then query it with
-  `read_json_auto('…')` — bypasses the context window entirely. Prefer this over the `duckdb` CLI.
+  `read_json_auto('…')` — bypasses the context window entirely.
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
   (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
