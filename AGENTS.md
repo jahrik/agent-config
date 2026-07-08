@@ -70,16 +70,21 @@ pipelines:
   diagnostics (`lsp_diagnostics`), and rename refactors (`lsp_rename`, over `sd`/`sed`). They
   resolve imports and scope, so they exclude same-named text and catch uses `rg` misses. Split:
   `rg` = text/pattern, the `lsp` server's tree-sitter tools (`ts_query`/`ts_extract`) = syntax
-  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths.
+  structure, `lsp_*` = what a symbol _means_ and connects to. Pass absolute paths. Before `rg`-ing
+  a bare symbol name to find where it is defined or used, call `lsp_definition`/`lsp_references`
+  instead; drop to `rg` only for text that is not a symbol (log strings, comments, config keys).
 - **Data wrangling:** `jq` (JSON), `yq` (YAML), `gron` to flatten JSON into greppable lines when
   the structure is unknown.
 - **Large data & API payloads:** the `data` MCP server (`duckdb_*` tools) — run SQL in place over
   big files, logs, CSV/JSON/JSONL/Parquet instead of reading them into context. For large API
   responses (e.g. `gh_api_get`), let the framework dump to a file, then query it with
-  `read_json_auto('…')` — bypasses the context window entirely.
+  `read_json_auto('…')` — bypasses the context window entirely. Before `Read`-ing a data file
+  (`.csv/.json/.jsonl/.parquet/.log`), check its size; over ~50 KB reach for `duckdb_*` instead
+  of `Read`. Source you need whole (code, configs) is exempt — size doesn't matter there.
 - **Editing:** `sd` for bulk find/replace in scripts (saner than `sed`).
 - **Lint before CI:** `shellcheck` + `shfmt` (shell), `hadolint` (Dockerfiles), `actionlint`
-  (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip.
+  (GitHub Actions workflows) — catch failures locally instead of burning a CI round-trip. Before
+  committing, lint and format everything you changed; don't push and let CI find it.
 - **Viewing/diffs:** `bat` for syntax-highlighted viewing; `delta` for readable git diffs.
 - **GitHub:** the `mcp-github` tools only (Hard Rule 7) — never the `gh` CLI.
 - **Workspace state:** the `ws_*` MCP tools (read-only `mcp-workspace` server) over ad-hoc
