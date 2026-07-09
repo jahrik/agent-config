@@ -2,6 +2,8 @@
 
 A manual, canonical dogfood checklist. Run these 5 tasks after major changes to the harness (skills, MCP servers, or agent personas) to verify end-to-end functionality.
 
+_Note: Each task cleans up after itself; the harness leaves no test residue._
+
 ## 1. Ansible Skill & Environment
 
 - **Prompt:** "Check the `ansible-arch-workstation` role for any linting errors and fix them."
@@ -10,8 +12,8 @@ A manual, canonical dogfood checklist. Run these 5 tasks after major changes to 
 
 ## 2. GitHub MCP Workflow
 
-- **Prompt:** "Create a new branch named `test-pr-workflow`, create an empty commit, and open a PR with the title 'test: GitHub Workflow' on `jahrik/mcp-servers`."
-- **Expected Pass:** The agent uses `github-workflow` skill conventions. It must use the `gh_*` tools (e.g. `gh_pr_create`) from the `mcp-github` server instead of the `gh` CLI.
+- **Prompt:** "Create a new branch named `test-pr-workflow`, create an empty commit, and open a PR with the title 'test: harness regression — safe to close' on `jahrik/mcp-servers`. Then close the PR and delete the branch."
+- **Expected Pass:** The agent uses `github-workflow` skill conventions. It must use the `gh_*` tools (e.g. `gh_pr_create` and `gh_pr_edit` to close) from the `mcp-github` server instead of the `gh` CLI.
 - **Guards Against:** The `github-workflow` skill failing to activate, regression of the `gh` CLI denial policy, or `mcp-github` authentication/tool failures.
 
 ## 3. Data Server (DuckDB)
@@ -22,8 +24,8 @@ A manual, canonical dogfood checklist. Run these 5 tasks after major changes to 
 
 ## 4. Memory Round-Trip
 
-- **Prompt:** "Remember that my favorite test keyword is 'immutable-marshmallow'. Then recall my favorite test keyword."
-- **Expected Pass:** The agent calls the `remember` tool on the `memory` MCP server, then successfully calls `recall` and finds the fact.
+- **Prompt:** "Remember that my favorite test keyword is 'immutable-marshmallow'. Then recall my favorite test keyword. Finally, forget the fact about my favorite test keyword."
+- **Expected Pass:** The agent calls the `remember` tool on the `memory` MCP server, then successfully calls `recall` and finds the fact, and finally calls `forget` to clean it up.
 - **Guards Against:** The `memory` MCP server failing to load, DuckDB lock contention on `memory.db`, or the `fts` extension failing to index.
 
 ## 5. LSP Navigation
