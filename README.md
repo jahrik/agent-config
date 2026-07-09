@@ -9,6 +9,7 @@ A portable AI agent configuration base — rules, skills, and SDLC subagents —
 ```
 agent-config/
 ├── AGENTS.md                  # Global rules loaded by all agents (Claude Code, AGY/Antigravity)
+├── REGRESSION.md              # Manual dogfood checklist to run after harness changes
 ├── agents/                    # 5 SDLC subagent personas → ~/.claude/agents/
 ├── hooks/
 │   └── guard-bash.sh          # PreToolUse guard: blocks gh CLI + pushes to main (self-test: --test)
