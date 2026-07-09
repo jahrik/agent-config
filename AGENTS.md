@@ -93,6 +93,9 @@ pipelines:
 - **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
 - **Async delegation:** the `dispatcher` MCP server to spawn and track background agent jobs
   instead of blocking on a long sub-task.
+- **Memory (`recall`):** Call at task start if the work plausibly touches prior decisions,
+  preferences, or ongoing context. Do NOT use for trivial or self-contained commands.
+  Treat low-relevance hits as noise to discard.
 - **Idempotency:** prefer commands and patterns that can safely re-run.
 
 Reach for a committed script (a skill's `scripts/`) before a long one-off pipeline.
