@@ -22,6 +22,7 @@ agent-config/
 │   ├── docker/                # Docker image and Swarm conventions
 │   ├── go/                    # Go project conventions
 │   ├── python/                # Python project conventions
+│   ├── session-stats/         # Transcript analytics via duckdb
 │   └── update-repo/           # Maintain/modernize repos by type (references/ per type)
 ├── scripts/
 │   └── lint-config.py         # Consistency checks (name↔dir, catalogs, size budget, links)
@@ -39,7 +40,7 @@ project-specific tooling baked in.
 **Skills** (`skills/`) — loaded on demand when their `description` matches:
 
 - **Reference:** `ansible`, `docker`, `go`, `python` — conventions per repo type
-- **Practice:** `github-workflow`, `load-sdlc-agents`, `systematic-debugging` — how to work
+- **Practice:** `github-workflow`, `load-sdlc-agents`, `session-stats`, `systematic-debugging` — how to work
 - **Authoring:** `agent-config-authoring`, `skill-creator` — extend this config
 - **Workflow:** `update-repo` — repo maintenance for `ansible-*`, `docker-*`, `arm-*`, Go, and
   Python repos (per-type checklists in `references/`)
