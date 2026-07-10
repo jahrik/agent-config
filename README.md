@@ -12,7 +12,10 @@ agent-config/
 ├── REGRESSION.md              # Manual dogfood checklist to run after harness changes
 ├── agents/                    # 5 SDLC subagent personas → ~/.claude/agents/
 ├── hooks/
-│   └── guard-bash.sh          # PreToolUse guard: blocks gh CLI + pushes to main (self-test: --test)
+│   ├── guard-bash.sh          # PreToolUse guard: blocks gh CLI + pushes to main (self-test: --test)
+│   ├── guard-write.sh         # PreToolUse guard: blocks credential patterns in file writes (self-test: --test)
+│   ├── format-on-edit.sh      # PostToolUse: shfmt/ruff/gofmt the edited file (self-test: --test)
+│   └── dispatcher-watch.sh    # Watcher: exits 2 when a dispatcher job needs review (self-test: --test)
 ├── skills/                    # Modular skill packs, loaded on demand by description
 │   ├── agent-config-authoring/ # How to author subagents and global rules
 │   ├── skill-creator/         # How to author a skill

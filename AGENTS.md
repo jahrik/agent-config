@@ -11,7 +11,8 @@ skills, per-repo docs, and tool schemas, loaded on demand.
 ## Hard Rules — Always Follow
 
 1. **Never write secrets, API keys, tokens, passwords, or credentials into any file.** Use a
-   secrets manager or environment variables instead.
+   secrets manager or environment variables instead (the `hooks/guard-write.sh` PreToolUse hook
+   backs this).
 2. **Never hardcode IP addresses or internal hostnames.** Use variables that config/templating
    fills in at deploy time.
 3. **Never create a `CLAUDE.md` file.** Use `AGENTS.md` for all project-level guidance — including
