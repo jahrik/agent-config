@@ -76,7 +76,13 @@ ln -s ~/.config/agents/agents    ~/.claude/agents
 # AGY/Antigravity
 ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
 ln -s ~/.config/agents/skills    ~/.gemini/config/skills
+ln -s ~/.config/agents/agents    ~/.gemini/config/agents
 ```
+
+The `hooks/` scripts only take effect once registered — in `~/.claude/settings.json`
+(Claude Code) and `~/.gemini/config/hooks.json` (AGY). The
+[ansible-ai-agents](https://github.com/jahrik/ansible-ai-agents) role does this for you;
+standalone users wire them by hand (each script's header documents its contract).
 
 ## Security
 

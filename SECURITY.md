@@ -20,7 +20,8 @@
 
 ## Enforcement
 
-This repo uses two layers of automated secret detection:
+Three layers of automated secret detection back this policy — the `hooks/guard-write.sh`
+PreToolUse hook blocks agents from writing credential patterns in the first place, then:
 
 ### 1. Pre-commit hooks (local)
 

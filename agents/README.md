@@ -1,7 +1,8 @@
 # Agent Catalog
 
 Subagent definitions (Claude Code personas) for a simplified SDLC. Each is a single markdown
-file with `name` / `description` / `tools` / `model` frontmatter and a system-prompt body —
+file with `name` / `description` / `model` frontmatter (plus `tools` where restricted —
+omitting it, as `devlead` does, grants all tools) and a system-prompt body —
 the native [Claude Code subagent](https://docs.claude.com/en/docs/claude-code/sub-agents)
 format. The [`ansible-ai-agents`](https://github.com/jahrik/ansible-ai-agents) role symlinks
 this directory into `~/.claude/agents/`, where Claude Code auto-discovers them.

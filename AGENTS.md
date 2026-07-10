@@ -41,9 +41,10 @@ The harness is three repos:
 - **[`jahrik/ansible-ai-agents`](https://github.com/jahrik/ansible-ai-agents)** — deploys the
   whole harness: agent CLIs, the pinned toolchain in `~/.local/bin`, this config, MCP server
   registration, and GitHub App credentials.
-- **[`jahrik/mcp-servers`](https://github.com/jahrik/mcp-servers)** — the MCP servers:
-  `mcp-github` (GitHub as the App identity) and `mcp-workspace` (read-only local git surveys,
-  registered as `ws`).
+- **[`jahrik/mcp-servers`](https://github.com/jahrik/mcp-servers)** — the six MCP servers:
+  `github` (GitHub as the App identity), `ws` (read-only local git surveys), `data` (SQL over
+  local files, DuckDB), `dispatcher` (async agent-to-agent job queue), `lsp` (language-server +
+  tree-sitter navigation), and `memory` (shared cross-session store). One `docs/` page each.
 
 Finding things at runtime:
 
