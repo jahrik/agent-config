@@ -12,7 +12,10 @@ agent-config/
 ├── REGRESSION.md              # Manual dogfood checklist to run after harness changes
 ├── agents/                    # 5 SDLC subagent personas → ~/.claude/agents/
 ├── hooks/
-│   └── guard-bash.sh          # PreToolUse guard: blocks gh CLI + pushes to main (self-test: --test)
+│   ├── guard-bash.sh          # PreToolUse guard: blocks gh CLI + pushes to main (self-test: --test)
+│   ├── guard-write.sh         # PreToolUse guard: blocks credential patterns in file writes (self-test: --test)
+│   ├── format-on-edit.sh      # PostToolUse: shfmt/ruff/gofmt the edited file (self-test: --test)
+│   └── dispatcher-watch.sh    # Watcher: exits 2 when a dispatcher job needs review (self-test: --test)
 ├── skills/                    # Modular skill packs, loaded on demand by description
 │   ├── agent-config-authoring/ # How to author subagents and global rules
 │   ├── skill-creator/         # How to author a skill
@@ -73,7 +76,13 @@ ln -s ~/.config/agents/agents    ~/.claude/agents
 # AGY/Antigravity
 ln -s ~/.config/agents/AGENTS.md ~/.gemini/config/AGENTS.md
 ln -s ~/.config/agents/skills    ~/.gemini/config/skills
+ln -s ~/.config/agents/agents    ~/.gemini/config/agents
 ```
+
+The `hooks/` scripts only take effect once registered — in `~/.claude/settings.json`
+(Claude Code) and `~/.gemini/config/hooks.json` (AGY). The
+[ansible-ai-agents](https://github.com/jahrik/ansible-ai-agents) role does this for you;
+standalone users wire them by hand (each script's header documents its contract).
 
 ## Security
 
