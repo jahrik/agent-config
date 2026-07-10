@@ -92,7 +92,7 @@ pipelines:
 - **Workspace state:** the `ws_*` MCP tools (read-only `mcp-workspace` server) over ad-hoc
   git/ls loops — `ws_status` (`attention_only: true`) first, `ws_branches` for cleanup
   questions, `ws_repo` for one repo. Cleanup is a separate, deliberate action.
-- **Workspace sync:** `repo-sync` for cross-repo clone/pull/status.
+- **Workspace sync:** `rs` for cross-repo clone/pull/status.
 - **Async delegation:** the `dispatcher` MCP server to spawn and track background agent jobs
   instead of blocking on a long sub-task.
 - **Memory (`recall`):** Call at task start if the work plausibly touches prior decisions,
