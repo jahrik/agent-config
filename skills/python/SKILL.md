@@ -7,6 +7,10 @@ description: Python project conventions — uv, ruff lint/format, ty type checki
 
 ## Conventions
 
+- **Naming:** no single-letter variable names — use a short descriptive word instead
+  (`region` not `r`, `error` not `e`, `month` not `m`, `cursor` not `c`). Applies to loop
+  variables, comprehension targets, lambda parameters, and `except ... as` bindings. The
+  only exception is a throwaway you never reference, which is written `_`.
 - **Packaging & deps:** `uv` (`pyproject.toml` + committed `uv.lock`); per-project `.venv/`;
   `src/` layout with `tests/` mirroring it.
 - **Format & lint:** `ruff` — config in `[tool.ruff]` in `pyproject.toml`, not separate dotfiles.
