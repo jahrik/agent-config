@@ -20,7 +20,8 @@ skills, per-repo docs, and tool schemas, loaded on demand.
    it instead of adding a second guidance file.
 4. **Ask before destructive operations** (delete, overwrite, drop, purge, reset).
 5. **Never commit or push to `main`.** Always branch, open a PR, and let the maintainer merge -
-   never `git push` to main and never auto-merge a PR.
+   never `git push` to main and never auto-merge a PR. Exception: dependabot-authored PRs where
+   all CI checks pass may be auto-merged; every other PR still requires the maintainer to merge.
 6. **Attribute commits** with a `Co-Authored-By:` trailer for the AI model used.
 7. **Never use the `gh` CLI.** GitHub operations go through the `mcp-github` MCP tools (`gh_*`);
    agents act as the GitHub App identity, `gh` is the human's own session (a permission deny rule
