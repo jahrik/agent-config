@@ -38,6 +38,8 @@ git checkout -b update-repo
 - Commit message: summarize what changed and why; attribute with the `Co-Authored-By:` trailer.
 - PR title: `Modernize: <repo-name>` (ansible roles: `Update role: <repo-name>`). Body: bullet list
   of changes + test-plan checklist + any "Proposed follow-ups" from the hygiene pass.
+- **After opening the PR, call `gh_pr_request_reviewers`** with Copilot and the maintainer (per
+  `github-workflow`) — don't leave a PR sitting with no reviewer requested.
 - **Never push to main; never auto-merge.** The maintainer merges.
 
 ## GitHub operations — mcp-github only
